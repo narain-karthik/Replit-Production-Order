@@ -288,7 +288,7 @@ def export_excel():
         ws.title = "Production Orders Report"
     
     # Define headers
-    headers = ['Production Order', 'Work Center', 'Quantity', 'Type', 'User', 'Date & Time']
+    headers = ['Production Order', 'Department', 'Quantity', 'Type', 'Date & Time']
     
     # Style for headers
     header_font = Font(bold=True)
@@ -312,8 +312,7 @@ def export_excel():
             ws.cell(row=row, column=2, value=order.workcenter.name)  # type: ignore
             ws.cell(row=row, column=3, value=order.quantity)  # type: ignore
             ws.cell(row=row, column=4, value=order.order_type)  # type: ignore
-            ws.cell(row=row, column=5, value=order.user.username)  # type: ignore
-            ws.cell(row=row, column=6, value=order.created_at.strftime('%Y-%m-%d %H:%M:%S'))  # type: ignore
+            ws.cell(row=row, column=5, value=order.created_at.strftime('%Y-%m-%d %H:%M:%S'))  # type: ignore
         
         # Auto-adjust column widths
         if hasattr(ws, 'columns') and hasattr(ws, 'column_dimensions'):

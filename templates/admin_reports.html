@@ -65,10 +65,9 @@
                         <thead>
                             <tr>
                                 <th>Production Order</th>
-                                <th>Work Center</th>
+                                <th>Department</th>
                                 <th>Quantity</th>
                                 <th>Type</th>
-                                <th>User</th>
                                 <th>Date & Time</th>
                             </tr>
                         </thead>
@@ -89,7 +88,6 @@
                                     </span>
                                     {% endif %}
                                 </td>
-                                <td>{{ order.user.username }}</td>
                                 <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                             </tr>
                             {% endfor %}
