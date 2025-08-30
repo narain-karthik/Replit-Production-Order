@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, make_response
 from app import app, db
-from models import User, WorkCenter, ProductionOrder
+from models import User, WorkCenter, ProductionOrder, Department
 from datetime import datetime
 import io
 from openpyxl import Workbook  # type: ignore
@@ -159,7 +159,8 @@ def admin_users():
         return redirect(url_for('login'))
     
     users = User.query.all()
-    return render_template('admin_users.html', users=users)
+    departments = Department.query.filter_by(is_active=True).all()
+    return render_template('admin_users.html', users=users, departments=departments)
 
 @app.route('/admin/create_user', methods=['POST'])
 def create_user():
@@ -349,7 +350,8 @@ def master_data():
         return redirect(url_for('login'))
     
     workcenters = WorkCenter.query.all()
-    return render_template('master_data.html', workcenters=workcenters)
+    departments = Department.query.all()
+    return render_template('master_data.html', workcenters=workcenters, departments=departments)
 
 @app.route('/admin/create_workcenter', methods=['POST'])
 def create_workcenter():
@@ -402,5 +404,60 @@ def delete_workcenter(wc_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Error deleting work center: {str(e)}', 'error')
+    
+    return redirect(url_for('master_data'))
+
+# Department Management Routes
+@app.route('/admin/create_department', methods=['POST'])
+def create_department():
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    name = request.form['name']
+    
+    try:
+        new_department = Department()
+        new_department.name = name
+        db.session.add(new_department)
+        db.session.commit()
+        flash('Department created successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating department: {str(e)}', 'error')
+    
+    return redirect(url_for('master_data'))
+
+@app.route('/admin/edit_department/<int:dept_id>', methods=['POST'])
+def edit_department(dept_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    department = Department.query.get_or_404(dept_id)
+    department.name = request.form['name']
+    department.is_active = 'is_active' in request.form
+    
+    try:
+        db.session.commit()
+        flash('Department updated successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating department: {str(e)}', 'error')
+    
+    return redirect(url_for('master_data'))
+
+@app.route('/admin/delete_department/<int:dept_id>', methods=['POST'])
+def delete_department(dept_id):
+    if 'user_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('login'))
+    
+    department = Department.query.get_or_404(dept_id)
+    
+    try:
+        department.is_active = False  # Soft delete
+        db.session.commit()
+        flash('Department deleted successfully', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting department: {str(e)}', 'error')
     
     return redirect(url_for('master_data'))

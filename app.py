@@ -37,7 +37,7 @@ with app.app_context():
     db.create_all()
     
     # Create default admin user if not exists
-    from models import User, WorkCenter
+    from models import User, WorkCenter, Department
     from werkzeug.security import generate_password_hash
     
     admin_user = User.query.filter_by(username='admin').first()
@@ -55,6 +55,14 @@ with app.app_context():
             workcenter = WorkCenter()
             workcenter.name = wc_name
             db.session.add(workcenter)
+    
+    # Create default departments if not exist
+    if Department.query.count() == 0:
+        default_departments = ['Engineering', 'Production', 'Quality Control', 'Maintenance', 'Operations', 'Management']
+        for dept_name in default_departments:
+            department = Department()
+            department.name = dept_name
+            db.session.add(department)
     
     db.session.commit()
 

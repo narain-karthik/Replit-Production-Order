@@ -30,7 +30,12 @@
                         </div>
                         <div class="col-md-2">
                             <label for="department" class="form-label">Department</label>
-                            <input type="text" class="form-control" id="department" name="department">
+                            <select class="form-control" id="department" name="department">
+                                <option value="">Select Department</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.name }}">{{ dept.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="col-md-2">
                             <label for="password" class="form-label">Password</label>
@@ -136,8 +141,12 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="edit_department{{ user.id }}" class="form-label">Department</label>
-                                                    <input type="text" class="form-control" id="edit_department{{ user.id }}" 
-                                                           name="department" value="{{ user.department or '' }}">
+                                                    <select class="form-control" id="edit_department{{ user.id }}" name="department">
+                                                        <option value="">Select Department</option>
+                                                        {% for dept in departments %}
+                                                        <option value="{{ dept.name }}" {{ 'selected' if user.department == dept.name else '' }}>{{ dept.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="edit_password{{ user.id }}" class="form-label">
