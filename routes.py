@@ -288,7 +288,7 @@ def export_excel():
         ws.title = "Production Orders Report"
     
     # Define headers
-    headers = ['Production Order', 'Department', 'Quantity', 'Type', 'Date & Time']
+    headers = ['Production Order', 'Work Center', 'Quantity', 'Type', 'Date & Time']
     
     # Style for headers
     header_font = Font(bold=True)
