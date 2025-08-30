@@ -379,9 +379,23 @@ h1 {
     box-shadow: 0 4px 15px var(--shadow-medium);
 }
 
+/* Footer */
+.custom-footer {
+    background: linear-gradient(135deg, var(--primary-soft-blue), #6BA3F0);
+    color: var(--white);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: auto;
+}
+
+.custom-footer p {
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
 /* Print styles */
 @media print {
-    .btn, .navbar, .modal {
+    .btn, .navbar, .modal, .custom-footer {
         display: none !important;
     }
     
