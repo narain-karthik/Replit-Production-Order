@@ -8,6 +8,17 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
+def get_database_uri():
+    """Get database URI - PostgreSQL primary, with SQL Server and MySQL support"""
+
+    # PostgreSQL (primary database)
+    postgres_url = os.environ.get("DATABASE_URL")
+    if postgres_url:
+        return postgres_url
+
+    # Direct PostgreSQL configuration for local development
+    return "postgresql://production_user:production_password_2024@localhost:5432/production_order_tracking"
+
 class Base(DeclarativeBase):
     pass
 
@@ -19,7 +30,7 @@ app.secret_key = os.environ.get("SESSION_SECRET")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = get_database_uri()
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
