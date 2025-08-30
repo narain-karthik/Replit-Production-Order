@@ -58,14 +58,23 @@ body {
     border-radius: 8px;
 }
 
-/* Container */
-.container {
+/* Main container */
+main.container {
     background-color: var(--white);
     border-radius: 12px;
     box-shadow: 0 2px 20px var(--shadow-light);
     padding: 2rem;
     margin-top: 2rem;
     margin-bottom: 2rem;
+}
+
+/* Navbar container should not have background */
+nav .container {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 1rem !important;
+    margin: 0 auto !important;
 }
 
 /* Cards */
@@ -361,6 +370,13 @@ h1 {
 
 .login-card {
     box-shadow: 0 8px 32px var(--shadow-medium);
+}
+
+.login-logo {
+    height: 80px;
+    width: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-medium);
 }
 
 /* Print styles */
