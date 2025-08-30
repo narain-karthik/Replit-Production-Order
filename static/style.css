@@ -33,13 +33,13 @@ body {
 }
 
 .custom-navbar .navbar-brand {
-    color: var(--white) !important;
+    color: var(--text-primary) !important;
     font-weight: 600;
     font-size: 1.3rem;
 }
 
 .custom-navbar .nav-link {
-    color: var(--white) !important;
+    color: var(--text-primary) !important;
     font-weight: 500;
 }
 
@@ -133,7 +133,7 @@ body {
 .bg-success .card-body,
 .bg-warning .card-body,
 .bg-info .card-body {
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .bg-primary .card-title,
@@ -156,7 +156,7 @@ body {
 
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-soft-blue), #6BA3F0);
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .btn-primary:hover {
@@ -167,7 +167,7 @@ body {
 
 .btn-success {
     background: linear-gradient(135deg, var(--secondary-soft-green), #8EDD3A);
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .btn-success:hover {
@@ -188,7 +188,7 @@ body {
 
 .btn-info {
     background: linear-gradient(135deg, #50C3E7, #70D1F0);
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .btn-info:hover {
