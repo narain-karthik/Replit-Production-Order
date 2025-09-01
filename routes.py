@@ -277,6 +277,53 @@ def admin_reports():
     
     return render_template('admin_reports.html', orders=orders, search=search, sort_by=sort_by, order=order)
 
+@app.route('/admin/balance_report')
+def admin_balance_report():
+    if 'user_id' not in session or not session.get('is_admin'):
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('login'))
+    
+    search = request.args.get('search', '')
+    
+    # Get all production orders
+    query = db.session.query(ProductionOrder).join(WorkCenter)
+    
+    if search:
+        query = query.filter(ProductionOrder.production_order.contains(search))
+    
+    all_orders = query.all()
+    
+    # Calculate balance for each production order per work center
+    balance_data = {}
+    
+    for order in all_orders:
+        key = f"{order.production_order}_{order.workcenter_id}"
+        
+        if key not in balance_data:
+            balance_data[key] = {
+                'production_order': order.production_order,
+                'workcenter_name': order.workcenter.name,
+                'workcenter_id': order.workcenter_id,
+                'total_in': 0,
+                'total_out': 0,
+                'balance': 0
+            }
+        
+        if order.order_type == 'IN':
+            balance_data[key]['total_in'] += order.quantity
+        else:
+            balance_data[key]['total_out'] += order.quantity
+    
+    # Calculate balance for each entry
+    for key in balance_data:
+        balance_data[key]['balance'] = balance_data[key]['total_in'] - balance_data[key]['total_out']
+    
+    # Convert to list and sort by production order
+    balance_list = list(balance_data.values())
+    balance_list.sort(key=lambda x: (x['production_order'], x['workcenter_name']))
+    
+    return render_template('admin_balance_report.html', balance_data=balance_list, search=search)
+
 @app.route('/admin/export_excel')
 def export_excel():
     if 'user_id' not in session or not session.get('is_admin'):
