@@ -10,12 +10,15 @@ The system uses a modern relational database architecture with **4 core tables**
 1. **users** - User authentication and profile management with role-based access
 2. **work_centers** - Production facility definitions and work center management
 3. **departments** - Organizational unit definitions and departmental structure
-4. **production_orders** - Core production order lifecycle with IN/OUT tracking and audit trails
+4. **production_orders** - Core production order lifecycle with IN/OUT tracking, balance calculations, and audit trails
+5. **workcenter_department** - Many-to-many relationship table linking work centers to departments for access control
 
 ## Database Architecture
 
 ### **Core Design Principles**
 - **Simplified Role Structure**: Two-tier system (Regular User and Administrator)
+- **Department-Based Access Control**: Users see only work centers assigned to their department
+- **Balance Calculations**: Real-time IN/OUT balance tracking per work center
 - **Audit Trail**: Complete tracking of production orders and user actions
 - **Performance Optimized**: Strategic indexing and connection pooling
 - **Manufacturing Focus**: Specialized for production order tracking workflows
@@ -170,6 +173,35 @@ INSERT INTO departments (name, is_active) VALUES
 ('Management', TRUE);
 ```
 
+### 5. Work Center Department Relationship Table (`workcenter_department`)
+
+Many-to-many relationship table enabling department-based work center access control.
+
+```sql
+CREATE TABLE workcenter_department (
+    workcenter_id INTEGER REFERENCES work_centers(id) ON DELETE CASCADE,
+    department_id INTEGER REFERENCES departments(id) ON DELETE CASCADE,
+    PRIMARY KEY (workcenter_id, department_id)
+);
+```
+
+**Field Specifications:**
+- `workcenter_id`: Foreign key reference to work_centers table (required)
+- `department_id`: Foreign key reference to departments table (required)
+- **Primary Key**: Composite key ensuring unique workcenter-department pairs
+
+**Indexes & Constraints:**
+```sql
+CREATE INDEX idx_workcenter_department_workcenter_id ON workcenter_department(workcenter_id);
+CREATE INDEX idx_workcenter_department_department_id ON workcenter_department(department_id);
+```
+
+**Purpose:**
+- Enables department-based filtering of work centers for users
+- Allows administrators to assign work centers to specific departments
+- Reduces interface complexity by showing only relevant work centers to users
+- Supports multi-department work center assignments when needed
+
 ### 4. Production Orders Table (`production_orders`)
 
 Core production order lifecycle management with comprehensive tracking and audit capabilities.
@@ -236,6 +268,10 @@ users.department ←→ departments.name [Many:1 via name reference]
 ```sql
 -- Work centers can have multiple production orders
 work_centers(id) ←→ production_orders(workcenter_id) [1:Many]
+
+-- Work centers can be assigned to multiple departments (Many-to-Many)
+work_centers(id) ←→ workcenter_department(workcenter_id) [1:Many]
+departments(id) ←→ workcenter_department(department_id) [1:Many]
 ```
 
 ### **Production Order Relationships**
@@ -487,8 +523,9 @@ AND id NOT IN (
 
 ---
 
-**Schema Version**: 1.0  
-**Last Updated**: August 30, 2025  
+**Schema Version**: 1.1  
+**Last Updated**: September 2, 2025  
 **PostgreSQL Compatibility**: 12+  
 **Encoding**: UTF-8  
-**Timezone**: UTC (converted to local in application layer)
+**Timezone**: UTC (converted to local in application layer)  
+**New Features**: Work center-department relationships, balance calculations

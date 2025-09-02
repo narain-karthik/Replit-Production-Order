@@ -10,23 +10,27 @@ The Production Order Tracking System uses a modern relational database architect
 1. **users** - User authentication and profile management with role-based access
 2. **work_centers** - Production facility definitions and work center management
 3. **departments** - Organizational unit definitions and structure
-4. **production_orders** - Core production order lifecycle with IN/OUT tracking
+4. **production_orders** - Core production order lifecycle with IN/OUT tracking and balance calculations
+5. **workcenter_department** - Many-to-many relationship table linking work centers to departments
 
 ## Features
 
 ### **Core Functionality**
-- **Production Order Management**: Record and track incoming (IN) and outgoing (OUT) production orders
-- **Work Center Integration**: Multi-work center support with dedicated tracking per facility
+- **Production Order Management**: Record and track incoming (IN) and outgoing (OUT) production orders with balance calculations
+- **Work Center Integration**: Multi-work center support with department-based filtering and dedicated tracking per facility
 - **Role-Based Access Control**: Simplified two-tier system (Regular User and Administrator)
+- **Department-Based Access**: Users only see work centers assigned to their department, reducing interface complexity
+- **Balance Reporting**: Real-time balance calculations showing IN/OUT quantities and current balance per work center
 - **Real-time Reporting**: Generate comprehensive reports with filtering and export capabilities
-- **Excel Export**: Professional Excel export with formatting and data visualization
+- **Excel Export**: Professional Excel export with formatting, balance data, and data visualization
 - **Search and Filtering**: Advanced search capabilities across all production data
 
 ### **User Management**
 - **Authentication**: Secure session-based login with password hashing
 - **User Profiles**: Department assignment and role management
-- **Admin Functions**: User management, work center configuration, and system administration
-- **Auto-provisioning**: Default admin user and work center creation on first startup
+- **Department-Based Access**: Users see only work centers assigned to their department
+- **Admin Functions**: User management, work center configuration, department assignment, and system administration
+- **Auto-provisioning**: Default admin user, work center, and department creation on first startup
 
 ### **Responsive Design**
 - **Bootstrap 5**: Professional dark theme interface
@@ -298,7 +302,8 @@ GUNICORN_TIMEOUT=30
 
 ---
 
-**Last Updated**: August 30, 2025  
-**Version**: 1.0  
+**Last Updated**: September 2, 2025  
+**Version**: 1.1  
 **Environment**: Replit Optimized  
-**Database**: PostgreSQL Compatible
+**Database**: PostgreSQL Compatible  
+**New Features**: Department-based work center filtering, balance calculations

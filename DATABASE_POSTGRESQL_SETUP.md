@@ -1,6 +1,6 @@
 # PostgreSQL Setup Guide for Production Order Tracking System
 
-Comprehensive setup guide for PostgreSQL database integration with the Production Order Tracking System, optimized for Replit deployment and local development environments.
+Comprehensive setup guide for PostgreSQL database integration with the Production Order Tracking System with department-based work center filtering, optimized for Replit deployment and local development environments.
 
 ## Overview
 
@@ -76,9 +76,13 @@ with app.app_context():
         admin = User.query.filter_by(username='admin').first()
         wc_count = WorkCenter.query.count()
         dept_count = Department.query.count()
+        # Check workcenter-department relationships
+        from sqlalchemy import text
+        relationship_count = db.session.execute(text('SELECT COUNT(*) FROM workcenter_department')).scalar()
         print(f'✅ Admin user: {\"Found\" if admin else \"Not found\"}')
         print(f'✅ Work centers: {wc_count}')
         print(f'✅ Departments: {dept_count}')
+        print(f'✅ Work center-department relationships: {relationship_count}')
     except Exception as e:
         print(f'❌ Error checking data: {e}')
 "
