@@ -329,23 +329,25 @@ def export_excel():
     if 'user_id' not in session or not session.get('is_admin'):
         return redirect(url_for('login'))
     
-    # Create workbook and worksheet
+    # Create workbook with two worksheets
     wb = Workbook()
-    ws = wb.active
-    if ws is not None:
-        ws.title = "Production Orders Report"
     
-    # Define headers
-    headers = ['Production Order', 'Work Center', 'Quantity', 'Type', 'Name', 'Department', 'Date & Time']
+    # First worksheet: All Production Orders
+    ws1 = wb.active
+    if ws1 is not None:
+        ws1.title = "All Production Orders"
+    
+    # Define headers for all orders
+    headers1 = ['Production Order', 'Work Center', 'Quantity', 'Type', 'Name', 'Department', 'Date & Time']
     
     # Style for headers
     header_font = Font(bold=True)
     header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
     
-    # Add headers
-    if ws is not None:
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col, value=header)  # type: ignore
+    # Add headers for first sheet
+    if ws1 is not None:
+        for col, header in enumerate(headers1, 1):
+            cell = ws1.cell(row=1, column=col, value=header)  # type: ignore
             if cell is not None:
                 cell.font = header_font
                 cell.fill = header_fill
@@ -354,18 +356,79 @@ def export_excel():
         # Get all orders
         orders = db.session.query(ProductionOrder).join(WorkCenter).join(User).order_by(ProductionOrder.created_at.desc()).all()
         
-        # Add data
+        # Add data to first sheet
         for row, order in enumerate(orders, 2):
-            ws.cell(row=row, column=1, value=order.production_order)  # type: ignore
-            ws.cell(row=row, column=2, value=order.workcenter.name)  # type: ignore
-            ws.cell(row=row, column=3, value=order.quantity)  # type: ignore
-            ws.cell(row=row, column=4, value=order.order_type)  # type: ignore
-            ws.cell(row=row, column=5, value=order.user.name or order.user.username)  # type: ignore
-            ws.cell(row=row, column=6, value=order.user.department or '-')  # type: ignore
-            ws.cell(row=row, column=7, value=order.created_at.strftime('%Y-%m-%d %H:%M:%S'))  # type: ignore
+            ws1.cell(row=row, column=1, value=order.production_order)  # type: ignore
+            ws1.cell(row=row, column=2, value=order.workcenter.name)  # type: ignore
+            ws1.cell(row=row, column=3, value=order.quantity)  # type: ignore
+            ws1.cell(row=row, column=4, value=order.order_type)  # type: ignore
+            ws1.cell(row=row, column=5, value=order.user.name or order.user.username)  # type: ignore
+            ws1.cell(row=row, column=6, value=order.user.department or '-')  # type: ignore
+            ws1.cell(row=row, column=7, value=order.created_at.strftime('%Y-%m-%d %H:%M:%S'))  # type: ignore
+    
+    # Second worksheet: Balance Report
+    ws2 = wb.create_sheet(title="Balance Report")
+    
+    # Define headers for balance report
+    headers2 = ['Production Order', 'Work Center', 'Total IN', 'Total OUT', 'Balance', 'Status']
+    
+    # Add headers for second sheet
+    for col, header in enumerate(headers2, 1):
+        cell = ws2.cell(row=1, column=col, value=header)  # type: ignore
+        if cell is not None:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center')
+    
+    # Calculate balance data (same logic as balance_report route)
+    balance_data = {}
+    
+    for order in orders:
+        key = f"{order.production_order}_{order.workcenter_id}"
         
-        # Auto-adjust column widths
-        if hasattr(ws, 'columns') and hasattr(ws, 'column_dimensions'):
+        if key not in balance_data:
+            balance_data[key] = {
+                'production_order': order.production_order,
+                'workcenter_name': order.workcenter.name,
+                'workcenter_id': order.workcenter_id,
+                'total_in': 0,
+                'total_out': 0,
+                'balance': 0
+            }
+        
+        if order.order_type == 'IN':
+            balance_data[key]['total_in'] += order.quantity
+        else:
+            balance_data[key]['total_out'] += order.quantity
+    
+    # Calculate balance for each entry
+    for key in balance_data:
+        balance_data[key]['balance'] = balance_data[key]['total_in'] - balance_data[key]['total_out']
+    
+    # Convert to list and sort by production order
+    balance_list = list(balance_data.values())
+    balance_list.sort(key=lambda x: (x['production_order'], x['workcenter_name']))
+    
+    # Add balance data to second sheet
+    for row, item in enumerate(balance_list, 2):
+        ws2.cell(row=row, column=1, value=item['production_order'])  # type: ignore
+        ws2.cell(row=row, column=2, value=item['workcenter_name'])  # type: ignore
+        ws2.cell(row=row, column=3, value=item['total_in'])  # type: ignore
+        ws2.cell(row=row, column=4, value=item['total_out'])  # type: ignore
+        ws2.cell(row=row, column=5, value=item['balance'])  # type: ignore
+        
+        # Add status
+        if item['balance'] > 0:
+            status = 'Available'
+        elif item['balance'] == 0:
+            status = 'Balanced'
+        else:
+            status = 'Shortage'
+        ws2.cell(row=row, column=6, value=status)  # type: ignore
+    
+    # Auto-adjust column widths for both sheets
+    for ws in [ws1, ws2]:
+        if ws and hasattr(ws, 'columns') and hasattr(ws, 'column_dimensions'):
             for column in ws.columns:  # type: ignore
                 max_length = 0
                 column_letter = column[0].column_letter
@@ -385,7 +448,7 @@ def export_excel():
     
     # Create response
     response = make_response(output.read())
-    response.headers['Content-Disposition'] = f'attachment; filename=production_orders_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    response.headers['Content-Disposition'] = f'attachment; filename=production_orders_with_balance_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     
     return response
