@@ -50,7 +50,8 @@
                         <thead>
                             <tr>
                                 <th>Production Order</th>
-                                <th>Work Center Balance</th>
+                                <th>Work Center</th>
+                                <th class="text-center">Balance</th>
                                 <th class="text-center">Status</th>
                             </tr>
                         </thead>
@@ -59,17 +60,17 @@
                             <tr>
                                 <td><strong>{{ item.production_order }}</strong></td>
                                 <td>
-                                    <strong>{{ item.workcenter_name }}</strong> 
-                                    <span class="text-muted">( In = {{ item.total_in }} - Out = {{ item.total_out }} )</span> 
-                                    <span class="fw-bold">Balance = 
-                                        {% if item.balance > 0 %}
-                                        <span class="text-success">{{ item.balance }}</span>
-                                        {% elif item.balance == 0 %}
-                                        <span class="text-muted">{{ item.balance }}</span>
-                                        {% else %}
-                                        <span class="text-danger">{{ item.balance }}</span>
-                                        {% endif %}
-                                    </span>
+                                    <strong>{{ item.workcenter_name }}</strong><br>
+                                    <small class="text-muted">( In = {{ item.total_in }} - Out = {{ item.total_out }} )</small>
+                                </td>
+                                <td class="text-center">
+                                    {% if item.balance > 0 %}
+                                    <span class="badge bg-success fs-6">{{ item.balance }}</span>
+                                    {% elif item.balance == 0 %}
+                                    <span class="badge bg-secondary fs-6">{{ item.balance }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger fs-6">{{ item.balance }}</span>
+                                    {% endif %}
                                 </td>
                                 <td class="text-center">
                                     {% if item.balance > 0 %}
