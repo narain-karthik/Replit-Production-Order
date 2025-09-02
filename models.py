@@ -2,6 +2,12 @@ from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
+# Association table for many-to-many relationship between WorkCenter and Department
+workcenter_department = db.Table('workcenter_department',
+    db.Column('workcenter_id', db.Integer, db.ForeignKey('work_center.id'), primary_key=True),
+    db.Column('department_id', db.Integer, db.ForeignKey('department.id'), primary_key=True)
+)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -27,6 +33,9 @@ class WorkCenter(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Many-to-many relationship with departments
+    departments = db.relationship('Department', secondary=workcenter_department, back_populates='workcenters')
+    
     def __repr__(self):
         return f'<WorkCenter {self.name}>'
 
@@ -35,6 +44,9 @@ class Department(db.Model):
     name = db.Column(db.String(100), nullable=False)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Many-to-many relationship with workcenters
+    workcenters = db.relationship('WorkCenter', secondary=workcenter_department, back_populates='departments')
     
     def __repr__(self):
         return f'<Department {self.name}>'

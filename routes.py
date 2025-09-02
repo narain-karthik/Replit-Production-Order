@@ -47,7 +47,25 @@ def in_orders():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    # Get current user
+    current_user = User.query.get(session['user_id'])
+    
+    # Filter work centers based on user's department
+    if current_user and current_user.department:
+        # Get departments that match user's department
+        user_departments = Department.query.filter_by(name=current_user.department).all()
+        if user_departments:
+            # Get work centers assigned to user's department
+            workcenters = WorkCenter.query.filter(
+                WorkCenter.is_active == True,
+                WorkCenter.departments.any(Department.id.in_([dept.id for dept in user_departments]))
+            ).all()
+        else:
+            workcenters = []
+    else:
+        # If user has no department or admin, show all work centers
+        workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    
     return render_template('in_orders.html', workcenters=workcenters)
 
 @app.route('/out_orders')
@@ -55,7 +73,25 @@ def out_orders():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    # Get current user
+    current_user = User.query.get(session['user_id'])
+    
+    # Filter work centers based on user's department
+    if current_user and current_user.department:
+        # Get departments that match user's department
+        user_departments = Department.query.filter_by(name=current_user.department).all()
+        if user_departments:
+            # Get work centers assigned to user's department
+            workcenters = WorkCenter.query.filter(
+                WorkCenter.is_active == True,
+                WorkCenter.departments.any(Department.id.in_([dept.id for dept in user_departments]))
+            ).all()
+        else:
+            workcenters = []
+    else:
+        # If user has no department or admin, show all work centers
+        workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    
     return render_template('out_orders.html', workcenters=workcenters)
 
 @app.route('/save_orders', methods=['POST'])
@@ -469,10 +505,17 @@ def create_workcenter():
         return redirect(url_for('login'))
     
     name = request.form['name']
+    department_ids = request.form.getlist('departments')
     
     try:
         new_workcenter = WorkCenter()
         new_workcenter.name = name
+        
+        # Assign departments to work center
+        if department_ids:
+            departments = Department.query.filter(Department.id.in_(department_ids)).all()
+            new_workcenter.departments = departments
+        
         db.session.add(new_workcenter)
         db.session.commit()
         flash('Work center created successfully', 'success')
@@ -490,6 +533,14 @@ def edit_workcenter(wc_id):
     workcenter = WorkCenter.query.get_or_404(wc_id)
     workcenter.name = request.form['name']
     workcenter.is_active = 'is_active' in request.form
+    
+    # Update department assignments
+    department_ids = request.form.getlist('departments')
+    if department_ids:
+        departments = Department.query.filter(Department.id.in_(department_ids)).all()
+        workcenter.departments = departments
+    else:
+        workcenter.departments = []
     
     try:
         db.session.commit()
