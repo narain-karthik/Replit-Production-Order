@@ -50,10 +50,7 @@
                         <thead>
                             <tr>
                                 <th>Production Order</th>
-                                <th>Work Center</th>
-                                <th class="text-center">Total IN</th>
-                                <th class="text-center">Total OUT</th>
-                                <th class="text-center">Balance</th>
+                                <th>Work Center Balance</th>
                                 <th class="text-center">Status</th>
                             </tr>
                         </thead>
@@ -61,33 +58,30 @@
                             {% for item in balance_data %}
                             <tr>
                                 <td><strong>{{ item.production_order }}</strong></td>
-                                <td>{{ item.workcenter_name }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">{{ item.total_in }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-warning">{{ item.total_out }}</span>
-                                </td>
-                                <td class="text-center">
-                                    {% if item.balance > 0 %}
-                                    <span class="badge bg-info fw-bold">+{{ item.balance }}</span>
-                                    {% elif item.balance == 0 %}
-                                    <span class="badge bg-secondary">{{ item.balance }}</span>
-                                    {% else %}
-                                    <span class="badge bg-danger fw-bold">{{ item.balance }}</span>
-                                    {% endif %}
+                                <td>
+                                    <strong>{{ item.workcenter_name }}</strong> 
+                                    <span class="text-muted">( In = {{ item.total_in }} - Out = {{ item.total_out }} )</span> 
+                                    <span class="fw-bold">Balance = 
+                                        {% if item.balance > 0 %}
+                                        <span class="text-success">{{ item.balance }}</span>
+                                        {% elif item.balance == 0 %}
+                                        <span class="text-muted">{{ item.balance }}</span>
+                                        {% else %}
+                                        <span class="text-danger">{{ item.balance }}</span>
+                                        {% endif %}
+                                    </span>
                                 </td>
                                 <td class="text-center">
                                     {% if item.balance > 0 %}
-                                    <span class="text-success">
+                                    <span class="badge bg-success">
                                         <i class="fas fa-check-circle me-1"></i>Available
                                     </span>
                                     {% elif item.balance == 0 %}
-                                    <span class="text-muted">
+                                    <span class="badge bg-secondary">
                                         <i class="fas fa-minus-circle me-1"></i>Balanced
                                     </span>
                                     {% else %}
-                                    <span class="text-danger">
+                                    <span class="badge bg-danger">
                                         <i class="fas fa-exclamation-triangle me-1"></i>Shortage
                                     </span>
                                     {% endif %}
