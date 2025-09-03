@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, make_response
 from app import app, db
 from models import User, WorkCenter, ProductionOrder, Department
-from datetime import datetime
+from datetime import datetime, timedelta
 import io
 from openpyxl import Workbook  # type: ignore
 from openpyxl.styles import Font, PatternFill, Alignment  # type: ignore
@@ -360,6 +360,9 @@ def admin_balance_report():
     # Calculate balance for each entry
     for key in balance_data:
         balance_data[key]['balance'] = balance_data[key]['total_in'] - balance_data[key]['total_out']
+        # Convert UTC time to IST (UTC + 5:30)
+        ist_time = balance_data[key]['last_activity'] + timedelta(hours=5, minutes=30)
+        balance_data[key]['last_activity_ist'] = ist_time.strftime('%Y-%m-%d %H:%M:%S')
     
     # Convert to list and sort by production order, work center, then user name
     balance_list = list(balance_data.values())
