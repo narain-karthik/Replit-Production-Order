@@ -53,6 +53,7 @@
                                 <th>Work Center</th>
                                 <th>Name</th>
                                 <th>Department</th>
+                                <th>Date & Time</th>
                                 <th class="text-center">Balance</th>
                                 <th class="text-center">Status</th>
                             </tr>
@@ -67,6 +68,7 @@
                                 </td>
                                 <td>{{ item.user_name }}</td>
                                 <td>{{ item.user_department }}</td>
+                                <td>{{ item.last_activity.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                                 <td class="text-center">
                                     {% if item.balance > 0 %}
                                     <span class="badge bg-success fs-6">{{ item.balance }}</span>

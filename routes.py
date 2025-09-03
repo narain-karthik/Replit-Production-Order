@@ -344,13 +344,18 @@ def admin_balance_report():
                 'user_department': order.user.department or '-',
                 'total_in': 0,
                 'total_out': 0,
-                'balance': 0
+                'balance': 0,
+                'last_activity': order.created_at
             }
         
         if order.order_type == 'IN':
             balance_data[key]['total_in'] += order.quantity
         else:
             balance_data[key]['total_out'] += order.quantity
+        
+        # Track the latest activity date
+        if order.created_at > balance_data[key]['last_activity']:
+            balance_data[key]['last_activity'] = order.created_at
     
     # Calculate balance for each entry
     for key in balance_data:
