@@ -4,13 +4,13 @@ Comprehensive Flask-based web application for tracking production orders in manu
 
 ## Overview
 
-The Production Order Tracking System uses a modern relational database architecture with **4 core tables** supporting user management, work center definitions, department organization, and comprehensive production order lifecycle tracking. Designed for PostgreSQL primary deployment with UTC timezone support and optimized for Replit environment.
+The Production Order Tracking System uses a modern relational database architecture with **4 core tables** supporting user management, work center definitions, department organization, and comprehensive production order lifecycle tracking. Designed for PostgreSQL primary deployment with IST timezone display and optimized for Replit environment.
 
 **Database Tables:**
-1. **users** - User authentication and profile management with role-based access
-2. **work_centers** - Production facility definitions and work center management
-3. **departments** - Organizational unit definitions and structure
-4. **production_orders** - Core production order lifecycle with IN/OUT tracking and balance calculations
+1. **user** - User authentication and profile management with role-based access
+2. **work_center** - Production facility definitions and work center management
+3. **department** - Organizational unit definitions and structure
+4. **production_order** - Core production order lifecycle with IN/OUT tracking and balance calculations
 5. **workcenter_department** - Many-to-many relationship table linking work centers to departments
 
 ## Features
@@ -83,31 +83,32 @@ The Production Order Tracking System uses a modern relational database architect
 - **Connection Management**: Connection pooling with automatic reconnection and health checks
 - **Data Integrity**: Foreign key constraints and comprehensive validation
 - **Performance**: Strategic indexing and query optimization
+- **Timezone**: All timestamps displayed in Indian Standard Time (IST) for user convenience
 
 ## Database Schema
 
 ### **Core Models**
 
-#### **Users (`users`)**
+#### **Users (`user`)**
 - User authentication and role management
 - Department assignment and profile information
 - Admin privileges and access control
 - Account status and creation tracking
 
-#### **Work Centers (`work_centers`)**
+#### **Work Centers (`work_center`)**
 - Production facility definitions
 - Active/inactive status management
 - Creation and modification tracking
 
-#### **Departments (`departments`)**
+#### **Departments (`department`)**
 - Organizational structure definitions
 - Department-based user organization
 - Administrative configuration
 
-#### **Production Orders (`production_orders`)**
+#### **Production Orders (`production_order`)**
 - Core order tracking with IN/OUT types
 - Work center assignment and user attribution
-- Quantity tracking and timestamp management
+- Quantity tracking and timestamp management (displayed in IST)
 - Complete audit trail with relationships
 
 For detailed database schema, see [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
@@ -168,14 +169,16 @@ production_order.workcenter_id = 1
 production_order.quantity = 100
 production_order.order_type = "IN"  # or "OUT"
 production_order.user_id = current_user.id
+# Timestamp automatically set to current time (displayed in IST)
 ```
 
 ### **Reporting and Analytics**
 - **Search Functionality**: Filter orders by production order number
-- **Sorting Options**: Sort by date, order number, or quantity
+- **Balance Reporting**: Real-time IN/OUT balance calculations with user name, department, and IST timestamps
 - **Export Capabilities**: Professional Excel export with formatting
-- **Date Range Filtering**: Filter orders by creation date
+- **Date Range Filtering**: Filter orders by creation date (displayed in IST)
 - **Work Center Analysis**: View orders by specific work centers
+- **Simplified Admin Reports**: Streamlined interface focusing on production order search
 
 ### **Excel Export Features**
 - **Professional Formatting**: Headers, colors, and alignment
@@ -302,8 +305,8 @@ GUNICORN_TIMEOUT=30
 
 ---
 
-**Last Updated**: September 2, 2025  
-**Version**: 1.1  
+**Last Updated**: September 3, 2025  
+**Version**: 1.2  
 **Environment**: Replit Optimized  
 **Database**: PostgreSQL Compatible  
-**New Features**: Department-based work center filtering, balance calculations
+**Current Features**: Department-based work center filtering, balance calculations with IST timestamps, simplified admin interface

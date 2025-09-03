@@ -7,10 +7,10 @@ Comprehensive documentation for the Production Order Tracking System database st
 The system uses a modern relational database architecture with **4 core tables** supporting user management, work center definitions, departmental organization, and comprehensive production order lifecycle tracking. Designed for PostgreSQL primary deployment with UTC timezone support and optimized for Replit environment.
 
 **Database Tables:**
-1. **users** - User authentication and profile management with role-based access
-2. **work_centers** - Production facility definitions and work center management
-3. **departments** - Organizational unit definitions and departmental structure
-4. **production_orders** - Core production order lifecycle with IN/OUT tracking, balance calculations, and audit trails
+1. **user** - User authentication and profile management with role-based access
+2. **work_center** - Production facility definitions and work center management  
+3. **department** - Organizational unit definitions and departmental structure
+4. **production_order** - Core production order lifecycle with IN/OUT tracking, balance calculations, and audit trails
 5. **workcenter_department** - Many-to-many relationship table linking work centers to departments for access control
 
 ## Database Architecture
@@ -55,12 +55,12 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO production_user;
 
 ## Database Tables
 
-### 1. Users Table (`users`)
+### 1. Users Table (`user`)
 
 Central user management with authentication, role assignment, and departmental organization.
 
 ```sql
-CREATE TABLE users (
+CREATE TABLE user (
     id SERIAL PRIMARY KEY,
     username VARCHAR(80) UNIQUE NOT NULL,
     name VARCHAR(100),
@@ -84,26 +84,26 @@ CREATE TABLE users (
 
 **Indexes & Constraints:**
 ```sql
-CREATE UNIQUE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_users_is_admin ON users(is_admin);
-CREATE INDEX idx_users_is_active ON users(is_active);
-CREATE INDEX idx_users_department ON users(department);
-CREATE INDEX idx_users_created_at ON users(created_at);
+CREATE UNIQUE INDEX idx_user_username ON user(username);
+CREATE INDEX idx_user_is_admin ON user(is_admin);
+CREATE INDEX idx_user_is_active ON user(is_active);
+CREATE INDEX idx_user_department ON user(department);
+CREATE INDEX idx_user_created_at ON user(created_at);
 ```
 
 **Default Admin User Creation:**
 ```sql
 -- Automatically created on first application startup
-INSERT INTO users (username, name, password_hash, is_admin, is_active)
+INSERT INTO user (username, name, password_hash, is_admin, is_active)
 VALUES ('admin', 'System Administrator', '[HASHED_PASSWORD]', TRUE, TRUE);
 ```
 
-### 2. Work Centers Table (`work_centers`)
+### 2. Work Centers Table (`work_center`)
 
 Production facility definitions with status management and creation tracking.
 
 ```sql
-CREATE TABLE work_centers (
+CREATE TABLE work_center (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
@@ -119,15 +119,15 @@ CREATE TABLE work_centers (
 
 **Indexes & Constraints:**
 ```sql
-CREATE INDEX idx_work_centers_name ON work_centers(name);
-CREATE INDEX idx_work_centers_is_active ON work_centers(is_active);
-CREATE INDEX idx_work_centers_created_at ON work_centers(created_at);
+CREATE INDEX idx_work_center_name ON work_center(name);
+CREATE INDEX idx_work_center_is_active ON work_center(is_active);
+CREATE INDEX idx_work_center_created_at ON work_center(created_at);
 ```
 
 **Default Work Centers:**
 ```sql
 -- Automatically created on first application startup
-INSERT INTO work_centers (name, is_active) VALUES
+INSERT INTO work_center (name, is_active) VALUES
 ('WC001 - Assembly', TRUE),
 ('WC002 - Machining', TRUE),
 ('WC003 - Welding', TRUE),
@@ -135,12 +135,12 @@ INSERT INTO work_centers (name, is_active) VALUES
 ('WC005 - Quality Control', TRUE);
 ```
 
-### 3. Departments Table (`departments`)
+### 3. Departments Table (`department`)
 
 Organizational structure definitions for user categorization and reporting.
 
 ```sql
-CREATE TABLE departments (
+CREATE TABLE department (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
@@ -156,15 +156,15 @@ CREATE TABLE departments (
 
 **Indexes & Constraints:**
 ```sql
-CREATE INDEX idx_departments_name ON departments(name);
-CREATE INDEX idx_departments_is_active ON departments(is_active);
-CREATE INDEX idx_departments_created_at ON departments(created_at);
+CREATE INDEX idx_department_name ON department(name);
+CREATE INDEX idx_department_is_active ON department(is_active);
+CREATE INDEX idx_department_created_at ON department(created_at);
 ```
 
 **Default Departments:**
 ```sql
 -- Automatically created on first application startup
-INSERT INTO departments (name, is_active) VALUES
+INSERT INTO department (name, is_active) VALUES
 ('Engineering', TRUE),
 ('Production', TRUE),
 ('Quality Control', TRUE),
@@ -179,8 +179,8 @@ Many-to-many relationship table enabling department-based work center access con
 
 ```sql
 CREATE TABLE workcenter_department (
-    workcenter_id INTEGER REFERENCES work_centers(id) ON DELETE CASCADE,
-    department_id INTEGER REFERENCES departments(id) ON DELETE CASCADE,
+    workcenter_id INTEGER REFERENCES work_center(id) ON DELETE CASCADE,
+    department_id INTEGER REFERENCES department(id) ON DELETE CASCADE,
     PRIMARY KEY (workcenter_id, department_id)
 );
 ```
@@ -202,18 +202,18 @@ CREATE INDEX idx_workcenter_department_department_id ON workcenter_department(de
 - Reduces interface complexity by showing only relevant work centers to users
 - Supports multi-department work center assignments when needed
 
-### 4. Production Orders Table (`production_orders`)
+### 4. Production Orders Table (`production_order`)
 
 Core production order lifecycle management with comprehensive tracking and audit capabilities.
 
 ```sql
-CREATE TABLE production_orders (
+CREATE TABLE production_order (
     id SERIAL PRIMARY KEY,
     production_order VARCHAR(50) NOT NULL,
-    workcenter_id INTEGER REFERENCES work_centers(id) NOT NULL,
+    workcenter_id INTEGER REFERENCES work_center(id) NOT NULL,
     quantity INTEGER NOT NULL,
     order_type VARCHAR(10) NOT NULL CHECK (order_type IN ('IN', 'OUT')),
-    user_id INTEGER REFERENCES users(id) NOT NULL,
+    user_id INTEGER REFERENCES user(id) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
@@ -229,27 +229,27 @@ CREATE TABLE production_orders (
 
 **Indexes & Constraints:**
 ```sql
-CREATE INDEX idx_production_orders_production_order ON production_orders(production_order);
-CREATE INDEX idx_production_orders_workcenter_id ON production_orders(workcenter_id);
-CREATE INDEX idx_production_orders_user_id ON production_orders(user_id);
-CREATE INDEX idx_production_orders_order_type ON production_orders(order_type);
-CREATE INDEX idx_production_orders_created_at ON production_orders(created_at);
-CREATE INDEX idx_production_orders_quantity ON production_orders(quantity);
+CREATE INDEX idx_production_order_production_order ON production_order(production_order);
+CREATE INDEX idx_production_order_workcenter_id ON production_order(workcenter_id);
+CREATE INDEX idx_production_order_user_id ON production_order(user_id);
+CREATE INDEX idx_production_order_order_type ON production_order(order_type);
+CREATE INDEX idx_production_order_created_at ON production_order(created_at);
+CREATE INDEX idx_production_order_quantity ON production_order(quantity);
 
 -- Composite indexes for common query patterns
-CREATE INDEX idx_production_orders_type_workcenter ON production_orders(order_type, workcenter_id);
-CREATE INDEX idx_production_orders_date_type ON production_orders(created_at, order_type);
-CREATE INDEX idx_production_orders_user_date ON production_orders(user_id, created_at);
+CREATE INDEX idx_production_order_type_workcenter ON production_order(order_type, workcenter_id);
+CREATE INDEX idx_production_order_date_type ON production_order(created_at, order_type);
+CREATE INDEX idx_production_order_user_date ON production_order(user_id, created_at);
 ```
 
 **Check Constraints:**
 ```sql
 -- Ensure valid order types
-ALTER TABLE production_orders ADD CONSTRAINT chk_order_type 
+ALTER TABLE production_order ADD CONSTRAINT chk_order_type 
 CHECK (order_type IN ('IN', 'OUT'));
 
 -- Ensure positive quantities
-ALTER TABLE production_orders ADD CONSTRAINT chk_positive_quantity 
+ALTER TABLE production_order ADD CONSTRAINT chk_positive_quantity 
 CHECK (quantity > 0);
 ```
 
@@ -258,29 +258,29 @@ CHECK (quantity > 0);
 ### **User Relationships**
 ```sql
 -- Users can create multiple production orders
-users(id) ←→ production_orders(user_id) [1:Many]
+user(id) ←→ production_order(user_id) [1:Many]
 
 -- Users belong to departments (referenced by name, not FK)
-users.department ←→ departments.name [Many:1 via name reference]
+user.department ←→ department.name [Many:1 via name reference]
 ```
 
 ### **Work Center Relationships**
 ```sql
 -- Work centers can have multiple production orders
-work_centers(id) ←→ production_orders(workcenter_id) [1:Many]
+work_center(id) ←→ production_order(workcenter_id) [1:Many]
 
 -- Work centers can be assigned to multiple departments (Many-to-Many)
-work_centers(id) ←→ workcenter_department(workcenter_id) [1:Many]
-departments(id) ←→ workcenter_department(department_id) [1:Many]
+work_center(id) ←→ workcenter_department(workcenter_id) [1:Many]
+department(id) ←→ workcenter_department(department_id) [1:Many]
 ```
 
 ### **Production Order Relationships**
 ```sql
 -- Production orders are created by users
-production_orders(user_id) ←→ users(id) [Many:1]
+production_order(user_id) ←→ user(id) [Many:1]
 
 -- Production orders are assigned to work centers
-production_orders(workcenter_id) ←→ work_centers(id) [Many:1]
+production_order(workcenter_id) ←→ work_center(id) [Many:1]
 ```
 
 ## Data Flow and Business Logic
@@ -289,7 +289,7 @@ production_orders(workcenter_id) ←→ work_centers(id) [Many:1]
 
 1. **Order Creation**:
    ```sql
-   INSERT INTO production_orders (production_order, workcenter_id, quantity, order_type, user_id)
+   INSERT INTO production_order (production_order, workcenter_id, quantity, order_type, user_id)
    VALUES ('PO-2024-001', 1, 100, 'IN', 1);
    ```
 
@@ -297,9 +297,9 @@ production_orders(workcenter_id) ←→ work_centers(id) [Many:1]
    ```sql
    -- Query orders by work center
    SELECT po.*, wc.name as workcenter_name, u.username
-   FROM production_orders po
-   JOIN work_centers wc ON po.workcenter_id = wc.id
-   JOIN users u ON po.user_id = u.id
+   FROM production_order po
+   JOIN work_center wc ON po.workcenter_id = wc.id
+   JOIN user u ON po.user_id = u.id
    WHERE wc.id = 1;
    ```
 
@@ -311,8 +311,8 @@ production_orders(workcenter_id) ←→ work_centers(id) [Many:1]
        po.order_type,
        COUNT(*) as order_count,
        SUM(po.quantity) as total_quantity
-   FROM production_orders po
-   JOIN work_centers wc ON po.workcenter_id = wc.id
+   FROM production_order po
+   JOIN work_center wc ON po.workcenter_id = wc.id
    WHERE DATE(po.created_at) = CURRENT_DATE
    GROUP BY wc.name, po.order_type
    ORDER BY wc.name, po.order_type;
@@ -327,9 +327,9 @@ production_orders(workcenter_id) ←→ work_centers(id) [Many:1]
    -- Optimized for reports page
    EXPLAIN ANALYZE
    SELECT po.*, wc.name as workcenter_name, u.username
-   FROM production_orders po
-   JOIN work_centers wc ON po.workcenter_id = wc.id
-   JOIN users u ON po.user_id = u.id
+   FROM production_order po
+   JOIN work_center wc ON po.workcenter_id = wc.id
+   JOIN user u ON po.user_id = u.id
    ORDER BY po.created_at DESC
    LIMIT 50;
    ```
@@ -345,7 +345,7 @@ production_orders(workcenter_id) ←→ work_centers(id) [Many:1]
        idx_tup_read,
        idx_tup_fetch
    FROM pg_stat_user_indexes
-   WHERE tablename IN ('users', 'work_centers', 'departments', 'production_orders')
+   WHERE tablename IN ('user', 'work_center', 'department', 'production_order')
    ORDER BY idx_scan DESC;
    ```
 
@@ -390,20 +390,20 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 
 ```sql
 -- Foreign key constraints ensure referential integrity
-ALTER TABLE production_orders 
-ADD CONSTRAINT fk_production_orders_workcenter
-FOREIGN KEY (workcenter_id) REFERENCES work_centers(id);
+ALTER TABLE production_order 
+ADD CONSTRAINT fk_production_order_workcenter
+FOREIGN KEY (workcenter_id) REFERENCES work_center(id);
 
-ALTER TABLE production_orders 
-ADD CONSTRAINT fk_production_orders_user
-FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE production_order 
+ADD CONSTRAINT fk_production_order_user
+FOREIGN KEY (user_id) REFERENCES user(id);
 
 -- Check constraints ensure data validity
-ALTER TABLE production_orders 
+ALTER TABLE production_order 
 ADD CONSTRAINT chk_order_type_valid
 CHECK (order_type IN ('IN', 'OUT'));
 
-ALTER TABLE production_orders 
+ALTER TABLE production_order 
 ADD CONSTRAINT chk_quantity_positive
 CHECK (quantity > 0);
 ```
@@ -428,10 +428,10 @@ WHERE idx_scan = 0 AND schemaname = 'public'
 ORDER BY pg_relation_size(indexrelid) DESC;
 
 -- Update table statistics
-ANALYZE users;
-ANALYZE work_centers;
-ANALYZE departments;
-ANALYZE production_orders;
+ANALYZE user;
+ANALYZE work_center;
+ANALYZE department;
+ANALYZE production_order;
 ```
 
 ### **Data Cleanup Routines**
@@ -439,16 +439,16 @@ ANALYZE production_orders;
 ```sql
 -- Archive old production orders (example: older than 1 year)
 -- Note: Implement as per business requirements
-CREATE TABLE production_orders_archive AS
-SELECT * FROM production_orders
+CREATE TABLE production_order_archive AS
+SELECT * FROM production_order
 WHERE created_at < CURRENT_DATE - INTERVAL '1 year';
 
 -- Clean up inactive users (soft delete verification)
-UPDATE users SET is_active = FALSE
+UPDATE user SET is_active = FALSE
 WHERE username != 'admin' 
 AND id NOT IN (
     SELECT DISTINCT user_id 
-    FROM production_orders 
+    FROM production_order 
     WHERE created_at > CURRENT_DATE - INTERVAL '90 days'
 );
 ```
@@ -491,8 +491,8 @@ AND id NOT IN (
    ```sql
    -- Check for orphaned records
    SELECT po.id, po.workcenter_id
-   FROM production_orders po
-   LEFT JOIN work_centers wc ON po.workcenter_id = wc.id
+   FROM production_order po
+   LEFT JOIN work_center wc ON po.workcenter_id = wc.id
    WHERE wc.id IS NULL;
    ```
 
@@ -501,7 +501,7 @@ AND id NOT IN (
    -- Identify slow queries
    SELECT query, calls, total_time, mean_time
    FROM pg_stat_statements
-   WHERE query LIKE '%production_orders%'
+   WHERE query LIKE '%production_order%'
    ORDER BY mean_time DESC
    LIMIT 10;
    ```
@@ -524,8 +524,8 @@ AND id NOT IN (
 ---
 
 **Schema Version**: 1.1  
-**Last Updated**: September 2, 2025  
+**Last Updated**: September 3, 2025  
 **PostgreSQL Compatibility**: 12+  
 **Encoding**: UTF-8  
-**Timezone**: UTC (converted to local in application layer)  
-**New Features**: Work center-department relationships, balance calculations
+**Timezone**: UTC (converted to IST in application layer)  
+**Current Features**: Work center-department relationships, balance calculations, IST time display, simplified reporting interface
