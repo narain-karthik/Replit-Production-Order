@@ -8,7 +8,7 @@ This guide will help you deploy the Flask-based Production Order Tracking System
 ### System Requirements
 - **Windows Server 2016+** or **Windows 10/11**
 - **IIS 10.0+** with required features
-- **Python 3.11+** (Latest stable version recommended)
+- **Python 3.13.7** (Latest stable version recommended)
 - **PostgreSQL 12+** or **SQL Server** (for production database)
 
 ### Required IIS Features
@@ -27,10 +27,10 @@ Enable these IIS features via "Turn Windows features on/off" or Server Manager:
 - IIS → CGI
 - Application Development → CGI
 
-## Step 1: Install Python 3.11+
+## Step 1: Install Python 3.13.7
 
 ### Download and Install Python
-1. Download Python 3.11+ from https://www.python.org/downloads/
+1. Download Python 3.13.7 from https://www.python.org/downloads/
 2. **Important:** Check "Add Python to PATH" during installation
 3. Select "Install for all users"
 4. Choose "Add Python to environment variables"
@@ -171,7 +171,7 @@ setx SESSION_SECRET "your-very-secure-secret-key-here-min-32-chars" /M
            path="*" 
            verb="*" 
            modules="FastCgiModule"
-           scriptProcessor="C:\Python311\python.exe|C:\Python311\Lib\site-packages\wfastcgi.py"
+           scriptProcessor="C:\Python313\python.exe|C:\Python313\Lib\site-packages\wfastcgi.py"
            resourceType="Unspecified" 
            requireAccess="Script" />
     </handlers>
@@ -202,7 +202,7 @@ setx SESSION_SECRET "your-very-secure-secret-key-here-min-32-chars" /M
            modules="httpPlatformHandler" 
            resourceType="Unspecified"/>
     </handlers>
-    <httpPlatform processPath="C:\Python311\python.exe"
+    <httpPlatform processPath="C:\Python313\python.exe"
                   arguments="main.py"
                   stdoutLogEnabled="true"
                   stdoutLogFile=".\logs\stdout.log"
@@ -242,7 +242,7 @@ if __name__ == '__main__':
 ### Set Python Permissions
 ```cmd
 # Give IIS access to Python
-icacls C:\Python311 /grant "IIS_IUSRS:(OI)(CI)F"
+icacls C:\Python313 /grant "IIS_IUSRS:(OI)(CI)F"
 icacls C:\inetpub\wwwroot\production-tracking /grant "IIS_IUSRS:(OI)(CI)F"
 ```
 
@@ -296,7 +296,7 @@ pip install flask flask-sqlalchemy gunicorn psycopg2-binary
 ```cmd
 # Fix permissions
 icacls C:\inetpub\wwwroot\production-tracking /grant "IIS_IUSRS:(OI)(CI)F"
-icacls C:\Python311 /grant "IIS_IUSRS:(OI)(CI)F"
+icacls C:\Python313 /grant "IIS_IUSRS:(OI)(CI)F"
 ```
 
 #### 5. Application Pool Crashes

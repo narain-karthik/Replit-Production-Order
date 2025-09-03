@@ -53,9 +53,7 @@
                                 <th>Work Center</th>
                                 <th>Name</th>
                                 <th>Department</th>
-                                <th>Date & Time</th>
                                 <th class="text-center">Balance</th>
-                                <th class="text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -68,7 +66,6 @@
                                 </td>
                                 <td>{{ item.user_name }}</td>
                                 <td>{{ item.user_department }}</td>
-                                <td>{{ item.last_activity_ist }} IST</td>
                                 <td class="text-center">
                                     {% if item.balance > 0 %}
                                     <span class="badge bg-success fs-6">{{ item.balance }}</span>
@@ -76,21 +73,6 @@
                                     <span class="badge bg-secondary fs-6">{{ item.balance }}</span>
                                     {% else %}
                                     <span class="badge bg-danger fs-6">{{ item.balance }}</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    {% if item.balance > 0 %}
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-check-circle me-1"></i>Available
-                                    </span>
-                                    {% elif item.balance == 0 %}
-                                    <span class="badge bg-secondary">
-                                        <i class="fas fa-minus-circle me-1"></i>Balanced
-                                    </span>
-                                    {% else %}
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>Shortage
-                                    </span>
                                     {% endif %}
                                 </td>
                             </tr>

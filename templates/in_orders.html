@@ -54,48 +54,14 @@
                         
                         <div class="col-md-1">
                             <label class="form-label">&nbsp;</label>
-                            <button type="button" class="btn btn-primary d-block" onclick="addOrder()">
-                                <i class="fas fa-plus"></i> Add
+                            <button type="button" class="btn btn-success d-block" onclick="saveOrder()">
+                                <i class="fas fa-save"></i> Save
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-list me-2"></i>Orders to Save</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Work Center</th>
-                                    <th>Production Order</th>
-                                    <th>Quantity</th>
-                                    <th>Date & Time</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ordersTable">
-                                <tr id="noOrdersRow">
-                                    <td colspan="5" class="text-center text-muted">No orders added yet</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-success me-2" id="saveBtn">
-                            <i class="fas fa-save me-2"></i>Save Orders
-                        </button>
-                        <a href="{{ url_for('menu') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back
-                        </a>
-                    </div>
-                </div>
-            </div>
         </form>
     </div>
 </div>
@@ -103,8 +69,6 @@
 
 {% block scripts %}
 <script>
-let orderCount = 0;
-
 // Update datetime every second
 function updateDateTime() {
     const now = new Date();
@@ -123,59 +87,40 @@ function updateDateTime() {
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-function addOrder() {
+function saveOrder() {
     const workcenter = document.getElementById('workcenter');
     const productionOrder = document.getElementById('production_order');
     const quantity = document.getElementById('quantity');
-    const datetime = document.getElementById('datetime');
     
-    
-    const ordersTable = document.getElementById('ordersTable');
-    const noOrdersRow = document.getElementById('noOrdersRow');
-    
-    if (noOrdersRow) {
-        noOrdersRow.remove();
+    // Validation
+    if (!workcenter.value) {
+        alert('Please select a work center');
+        return;
+    }
+    if (!productionOrder.value.trim()) {
+        alert('Please enter a production order');
+        return;
+    }
+    if (!quantity.value || quantity.value <= 0) {
+        alert('Please enter a valid quantity');
+        return;
     }
     
-    const workCenterText = workcenter.value ? workcenter.options[workcenter.selectedIndex].text : 'No Work Center';
-    const workCenterValue = workcenter.value || '';
-    const prodOrderValue = productionOrder.value || '';
-    const quantityValue = quantity.value || '0';
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("save_orders") }}';
     
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${workCenterText}</td>
-        <td>${prodOrderValue}</td>
-        <td>${quantityValue}</td>
-        <td>${datetime.value}</td>
-        <td>
-            <button type="button" class="btn btn-sm btn-danger" onclick="removeOrder(this)">
-                <i class="fas fa-trash"></i>
-            </button>
-        </td>
-        <input type="hidden" name="orders" value="${workCenterValue}|${prodOrderValue}|${quantityValue}">
+    // Add form data
+    const orderData = `${workcenter.value}|${productionOrder.value.trim()}|${quantity.value}`;
+    
+    form.innerHTML = `
+        <input type="hidden" name="order_type" value="IN">
+        <input type="hidden" name="orders" value="${orderData}">
     `;
     
-    ordersTable.appendChild(row);
-    orderCount++;
-    
-    // Save button is always enabled
-    
-    // Clear form
-    productionOrder.value = '';
-    quantity.value = '';
-    workcenter.selectedIndex = 0;
-}
-
-function removeOrder(button) {
-    button.closest('tr').remove();
-    orderCount--;
-    
-    if (orderCount === 0) {
-        const ordersTable = document.getElementById('ordersTable');
-        ordersTable.innerHTML = '<tr id="noOrdersRow"><td colspan="5" class="text-center text-muted">No orders added yet</td></tr>';
-        // Save button remains enabled
-    }
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 {% endblock %}
