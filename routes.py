@@ -253,8 +253,9 @@ def edit_user(user_id):
     user.username = new_username
     user.name = request.form.get('name', '')
     user.department = request.form.get('department', '')
-    if request.form.get('password'):
-        user.set_password(request.form['password'])
+    password = request.form.get('password', '').strip()
+    if password:
+        user.set_password(password)
     user.is_admin = 'is_admin' in request.form
     user.is_active = 'is_active' in request.form
     
