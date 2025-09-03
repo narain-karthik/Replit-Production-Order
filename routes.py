@@ -163,6 +163,11 @@ def reports():
     
     orders = query.all()
     
+    # Convert UTC times to IST for each order
+    for order in orders:
+        ist_time = order.created_at + timedelta(hours=5, minutes=30)
+        order.created_at_ist = ist_time.strftime('%Y-%m-%d %H:%M:%S')
+    
     return render_template('reports.html', orders=orders, search=search, sort_by=sort_by, order=order)
 
 # Admin Routes
@@ -311,6 +316,11 @@ def admin_reports():
     
     orders = query.all()
     
+    # Convert UTC times to IST for each order
+    for order in orders:
+        ist_time = order.created_at + timedelta(hours=5, minutes=30)
+        order.created_at_ist = ist_time.strftime('%Y-%m-%d %H:%M:%S')
+    
     return render_template('admin_reports.html', orders=orders, search=search, sort_by=sort_by, order=order)
 
 @app.route('/admin/balance_report')
@@ -410,7 +420,9 @@ def export_excel():
             ws1.cell(row=row, column=4, value=order.order_type)  # type: ignore
             ws1.cell(row=row, column=5, value=order.user.name or order.user.username)  # type: ignore
             ws1.cell(row=row, column=6, value=order.user.department or '-')  # type: ignore
-            ws1.cell(row=row, column=7, value=order.created_at.strftime('%Y-%m-%d %H:%M:%S'))  # type: ignore
+            # Convert to IST (UTC + 5:30) for display
+            ist_time = order.created_at + timedelta(hours=5, minutes=30)
+            ws1.cell(row=row, column=7, value=ist_time.strftime('%Y-%m-%d %H:%M:%S') + ' IST')  # type: ignore
     
     # Second worksheet: Balance Report
     ws2 = wb.create_sheet(title="Balance Report")
