@@ -180,12 +180,29 @@ def balance_report():
         return redirect(url_for('login'))
     
     search = request.args.get('search', '')
+    workcenter_filter = request.args.get('workcenter', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     # Get all production orders with user information
     query = db.session.query(ProductionOrder).join(WorkCenter).join(User)
     
+    # Apply filters
     if search:
         query = query.filter(ProductionOrder.production_order.contains(search))
+    
+    if workcenter_filter:
+        query = query.filter(ProductionOrder.workcenter_id == int(workcenter_filter))
+    
+    if date_from:
+        from datetime import datetime
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) >= date_from_obj)
+    
+    if date_to:
+        from datetime import datetime
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) <= date_to_obj)
     
     all_orders = query.all()
     
@@ -220,7 +237,12 @@ def balance_report():
     balance_list = list(balance_data.values())
     balance_list.sort(key=lambda x: (x['production_order'], x['workcenter_name']))
     
-    return render_template('balance_report.html', balance_data=balance_list, search=search)
+    # Get all work centers for the filter dropdown
+    workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    
+    return render_template('balance_report.html', balance_data=balance_list, search=search,
+                         workcenters=workcenters, workcenter_filter=workcenter_filter,
+                         date_from=date_from, date_to=date_to)
 
 # Admin Routes
 @app.route('/admin/dashboard')
@@ -395,12 +417,29 @@ def admin_balance_report():
         return redirect(url_for('login'))
     
     search = request.args.get('search', '')
+    workcenter_filter = request.args.get('workcenter', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     # Get all production orders with user information
     query = db.session.query(ProductionOrder).join(WorkCenter).join(User)
     
+    # Apply filters
     if search:
         query = query.filter(ProductionOrder.production_order.contains(search))
+    
+    if workcenter_filter:
+        query = query.filter(ProductionOrder.workcenter_id == int(workcenter_filter))
+    
+    if date_from:
+        from datetime import datetime
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) >= date_from_obj)
+    
+    if date_to:
+        from datetime import datetime
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) <= date_to_obj)
     
     all_orders = query.all()
     
@@ -443,7 +482,12 @@ def admin_balance_report():
     balance_list = list(balance_data.values())
     balance_list.sort(key=lambda x: (x['production_order'], x['workcenter_name'], x['user_name']))
     
-    return render_template('admin_balance_report.html', balance_data=balance_list, search=search)
+    # Get all work centers for the filter dropdown
+    workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    
+    return render_template('admin_balance_report.html', balance_data=balance_list, search=search,
+                         workcenters=workcenters, workcenter_filter=workcenter_filter,
+                         date_from=date_from, date_to=date_to)
 
 @app.route('/admin/export_excel')
 def export_excel():
