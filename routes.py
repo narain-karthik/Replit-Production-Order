@@ -242,8 +242,15 @@ def edit_user(user_id):
         return redirect(url_for('login'))
     
     user = User.query.get_or_404(user_id)
+    new_username = request.form['username']
     
-    user.username = request.form['username']
+    # Check if username already exists (excluding current user)
+    existing_user = User.query.filter_by(username=new_username).first()
+    if existing_user and existing_user.id != user_id:
+        flash('Username already exists', 'error')
+        return redirect(url_for('admin_users'))
+    
+    user.username = new_username
     user.name = request.form.get('name', '')
     user.department = request.form.get('department', '')
     if request.form['password']:
