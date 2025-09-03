@@ -22,31 +22,37 @@
             <div class="card-body">
                 <form method="GET" action="{{ url_for('reports') }}">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="search" class="form-label">Search Production Order</label>
                             <input type="text" class="form-control" id="search" name="search" 
                                    value="{{ search }}" placeholder="Enter production order number">
                         </div>
                         <div class="col-md-3">
-                            <label for="sort" class="form-label">Sort By</label>
-                            <select class="form-select" id="sort" name="sort">
-                                <option value="created_at" {{ 'selected' if sort_by == 'created_at' else '' }}>Date & Time</option>
-                                <option value="production_order" {{ 'selected' if sort_by == 'production_order' else '' }}>Production Order</option>
-                                <option value="quantity" {{ 'selected' if sort_by == 'quantity' else '' }}>Quantity</option>
+                            <label for="workcenter" class="form-label">Work Center</label>
+                            <select class="form-select" id="workcenter" name="workcenter">
+                                <option value="">All Work Centers</option>
+                                {% for wc in workcenters %}
+                                <option value="{{ wc.id }}" {{ 'selected' if workcenter_filter == wc.id|string else '' }}>{{ wc.name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label for="order" class="form-label">Order</label>
-                            <select class="form-select" id="order" name="order">
-                                <option value="desc" {{ 'selected' if order == 'desc' else '' }}>Descending</option>
-                                <option value="asc" {{ 'selected' if order == 'asc' else '' }}>Ascending</option>
-                            </select>
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
                         </div>
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary d-block">
-                                <i class="fas fa-search me-2"></i>Search
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
                             </button>
+                            <a href="{{ url_for('reports') }}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </a>
                         </div>
                     </div>
                 </form>

@@ -136,39 +136,43 @@ def reports():
         return redirect(url_for('login'))
     
     search = request.args.get('search', '')
-    sort_by = request.args.get('sort', 'created_at')
-    order = request.args.get('order', 'desc')
+    workcenter_filter = request.args.get('workcenter', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     query = db.session.query(ProductionOrder).join(WorkCenter).join(User)
     
+    # Apply filters
     if search:
         query = query.filter(ProductionOrder.production_order.contains(search))
     
-    # Sorting
-    if sort_by == 'created_at':
-        if order == 'asc':
-            query = query.order_by(ProductionOrder.created_at.asc())
-        else:
-            query = query.order_by(ProductionOrder.created_at.desc())
-    elif sort_by == 'production_order':
-        if order == 'asc':
-            query = query.order_by(ProductionOrder.production_order.asc())
-        else:
-            query = query.order_by(ProductionOrder.production_order.desc())
-    elif sort_by == 'quantity':
-        if order == 'asc':
-            query = query.order_by(ProductionOrder.quantity.asc())
-        else:
-            query = query.order_by(ProductionOrder.quantity.desc())
+    if workcenter_filter:
+        query = query.filter(ProductionOrder.workcenter_id == int(workcenter_filter))
     
-    orders = query.all()
+    if date_from:
+        from datetime import datetime
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) >= date_from_obj)
+    
+    if date_to:
+        from datetime import datetime
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) <= date_to_obj)
+    
+    # Default sorting by created_at desc
+    orders = query.order_by(ProductionOrder.created_at.desc()).all()
     
     # Convert UTC times to IST for each order
     for order in orders:
         ist_time = order.created_at + timedelta(hours=5, minutes=30)
         order.created_at_ist = ist_time.strftime('%Y-%m-%d %H:%M:%S')
     
-    return render_template('reports.html', orders=orders, search=search, sort_by=sort_by, order=order)
+    # Get all work centers for the filter dropdown
+    workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    
+    return render_template('reports.html', orders=orders, search=search, 
+                         workcenters=workcenters, workcenter_filter=workcenter_filter,
+                         date_from=date_from, date_to=date_to)
 
 @app.route('/balance_report')
 def balance_report():
@@ -346,39 +350,43 @@ def admin_reports():
         return redirect(url_for('login'))
     
     search = request.args.get('search', '')
-    sort_by = request.args.get('sort', 'created_at')
-    order = request.args.get('order', 'desc')
+    workcenter_filter = request.args.get('workcenter', '')
+    date_from = request.args.get('date_from', '')
+    date_to = request.args.get('date_to', '')
     
     query = db.session.query(ProductionOrder).join(WorkCenter).join(User)
     
+    # Apply filters
     if search:
         query = query.filter(ProductionOrder.production_order.contains(search))
     
-    # Sorting
-    if sort_by == 'created_at':
-        if order == 'asc':
-            query = query.order_by(ProductionOrder.created_at.asc())
-        else:
-            query = query.order_by(ProductionOrder.created_at.desc())
-    elif sort_by == 'production_order':
-        if order == 'asc':
-            query = query.order_by(ProductionOrder.production_order.asc())
-        else:
-            query = query.order_by(ProductionOrder.production_order.desc())
-    elif sort_by == 'quantity':
-        if order == 'asc':
-            query = query.order_by(ProductionOrder.quantity.asc())
-        else:
-            query = query.order_by(ProductionOrder.quantity.desc())
+    if workcenter_filter:
+        query = query.filter(ProductionOrder.workcenter_id == int(workcenter_filter))
     
-    orders = query.all()
+    if date_from:
+        from datetime import datetime
+        date_from_obj = datetime.strptime(date_from, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) >= date_from_obj)
+    
+    if date_to:
+        from datetime import datetime
+        date_to_obj = datetime.strptime(date_to, '%Y-%m-%d').date()
+        query = query.filter(db.func.date(ProductionOrder.created_at) <= date_to_obj)
+    
+    # Default sorting by created_at desc
+    orders = query.order_by(ProductionOrder.created_at.desc()).all()
     
     # Convert UTC times to IST for each order
     for order in orders:
         ist_time = order.created_at + timedelta(hours=5, minutes=30)
         order.created_at_ist = ist_time.strftime('%Y-%m-%d %H:%M:%S')
     
-    return render_template('admin_reports.html', orders=orders, search=search, sort_by=sort_by, order=order)
+    # Get all work centers for the filter dropdown
+    workcenters = WorkCenter.query.filter_by(is_active=True).all()
+    
+    return render_template('admin_reports.html', orders=orders, search=search,
+                         workcenters=workcenters, workcenter_filter=workcenter_filter,
+                         date_from=date_from, date_to=date_to)
 
 @app.route('/admin/balance_report')
 def admin_balance_report():
