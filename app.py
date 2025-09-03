@@ -26,7 +26,7 @@ db = SQLAlchemy(model_class=Base)
 
 # create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET")
+app.secret_key = os.environ.get("SESSION_SECRET" , "1010")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # configure the database
@@ -78,4 +78,4 @@ with app.app_context():
     db.session.commit()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=1010, debug=True)

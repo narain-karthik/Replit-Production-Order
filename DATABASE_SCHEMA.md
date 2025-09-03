@@ -60,7 +60,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO production_user;
 Central user management with authentication, role assignment, and departmental organization.
 
 ```sql
-CREATE TABLE user (
+CREATE TABLE "user" (
     id SERIAL PRIMARY KEY,
     username VARCHAR(80) UNIQUE NOT NULL,
     name VARCHAR(100),
@@ -213,7 +213,7 @@ CREATE TABLE production_order (
     workcenter_id INTEGER REFERENCES work_center(id) NOT NULL,
     quantity INTEGER NOT NULL,
     order_type VARCHAR(10) NOT NULL CHECK (order_type IN ('IN', 'OUT')),
-    user_id INTEGER REFERENCES user(id) NOT NULL,
+    user_id INTEGER REFERENCES "user"(id) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
