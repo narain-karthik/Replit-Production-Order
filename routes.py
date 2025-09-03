@@ -253,7 +253,7 @@ def edit_user(user_id):
     user.username = new_username
     user.name = request.form.get('name', '')
     user.department = request.form.get('department', '')
-    if request.form['password']:
+    if request.form.get('password'):
         user.set_password(request.form['password'])
     user.is_admin = 'is_admin' in request.form
     user.is_active = 'is_active' in request.form
@@ -280,7 +280,8 @@ def delete_user(user_id):
         return redirect(url_for('admin_users'))
     
     try:
-        user.is_active = False  # Soft delete
+        # Delete user completely from database
+        db.session.delete(user)
         db.session.commit()
         flash('User deleted successfully', 'success')
     except Exception as e:
@@ -588,7 +589,8 @@ def delete_workcenter(wc_id):
     workcenter = WorkCenter.query.get_or_404(wc_id)
     
     try:
-        workcenter.is_active = False  # Soft delete
+        # Delete work center completely from database
+        db.session.delete(workcenter)
         db.session.commit()
         flash('Work center deleted successfully', 'success')
     except Exception as e:
@@ -643,7 +645,8 @@ def delete_department(dept_id):
     department = Department.query.get_or_404(dept_id)
     
     try:
-        department.is_active = False  # Soft delete
+        # Delete department completely from database
+        db.session.delete(department)
         db.session.commit()
         flash('Department deleted successfully', 'success')
     except Exception as e:
