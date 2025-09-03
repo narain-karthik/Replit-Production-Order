@@ -22,27 +22,12 @@
             <div class="card-body">
                 <form method="GET" action="{{ url_for('admin_reports') }}">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-8">
                             <label for="search" class="form-label">Search Production Order</label>
                             <input type="text" class="form-control" id="search" name="search" 
                                    value="{{ search }}" placeholder="Enter production order number">
                         </div>
-                        <div class="col-md-3">
-                            <label for="sort" class="form-label">Sort By</label>
-                            <select class="form-select" id="sort" name="sort">
-                                <option value="created_at" {{ 'selected' if sort_by == 'created_at' else '' }}>Date & Time</option>
-                                <option value="production_order" {{ 'selected' if sort_by == 'production_order' else '' }}>Production Order</option>
-                                <option value="quantity" {{ 'selected' if sort_by == 'quantity' else '' }}>Quantity</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="order" class="form-label">Order</label>
-                            <select class="form-select" id="order" name="order">
-                                <option value="desc" {{ 'selected' if order == 'desc' else '' }}>Descending</option>
-                                <option value="asc" {{ 'selected' if order == 'asc' else '' }}>Ascending</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <label class="form-label">&nbsp;</label>
                             <button type="submit" class="btn btn-primary d-block">
                                 <i class="fas fa-search me-2"></i>Search
