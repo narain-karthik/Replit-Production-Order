@@ -15,6 +15,7 @@ class User(db.Model):
     department = db.Column(db.String(100), nullable=True)
     password_hash = db.Column(db.String(256), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    excel_access = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     

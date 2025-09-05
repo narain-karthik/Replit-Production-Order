@@ -41,10 +41,16 @@
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <div class="form-check mt-4 pt-2">
                                 <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin">
-                                <label class="form-check-label" for="is_admin">Admin User</label>
+                                <label class="form-check-label" for="is_admin">Admin</label>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-check mt-4 pt-2">
+                                <input class="form-check-input" type="checkbox" id="excel_access" name="excel_access">
+                                <label class="form-check-label" for="excel_access">Excel Access</label>
                             </div>
                         </div>
                         <div class="col-md-2">
@@ -73,6 +79,7 @@
                                 <th>Name</th>
                                 <th>Department</th>
                                 <th>Role</th>
+                                <th>Excel Access</th>
                                 <th>Status</th>
                                 <th>Created Date</th>
                                 <th>Actions</th>
@@ -93,6 +100,15 @@
                                     <span class="badge bg-primary">
                                         <i class="fas fa-user me-1"></i>User
                                     </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.excel_access %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-file-excel me-1"></i>Yes
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">No</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -178,6 +194,16 @@
                                    {{ 'checked' if user.is_admin else '' }}>
                             <label class="form-check-label" for="edit_is_admin{{ user.id }}">
                                 Admin User
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="edit_excel_access{{ user.id }}" name="excel_access"
+                                   {{ 'checked' if user.excel_access else '' }}>
+                            <label class="form-check-label" for="edit_excel_access{{ user.id }}">
+                                Excel Access
                             </label>
                         </div>
                     </div>
