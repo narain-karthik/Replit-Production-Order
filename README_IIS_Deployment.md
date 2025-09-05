@@ -1,7 +1,7 @@
 # Production Order Tracking System - IIS Deployment Guide
 
 ## Overview
-This guide will help you deploy the Flask-based Production Order Tracking System on Windows IIS with Python 3.11+.
+This guide will help you deploy the Flask-based Production Order Tracking System on Windows IIS with Python 3.11+. This version includes Excel export access control and enhanced user management features.
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@ This guide will help you deploy the Flask-based Production Order Tracking System
 - **Windows Server 2016+** or **Windows 10/11**
 - **IIS 10.0+** with required features
 - **Python 3.13.7** (Latest stable version recommended)
-- **PostgreSQL 12+** or **SQL Server** (for production database)
+- **PostgreSQL 15+** or **SQL Server** (for production database)
 
 ### Required IIS Features
 Enable these IIS features via "Turn Windows features on/off" or Server Manager:
@@ -251,7 +251,18 @@ icacls C:\inetpub\wwwroot\production-tracking /grant "IIS_IUSRS:(OI)(CI)F"
 ### Run Database Setup
 ```cmd
 cd C:\inetpub\wwwroot\production-tracking
-python -c "from app import app, db; app.app_context().push(); db.create_all(); print('Database initialized')"
+python -c "from app import app, db; app.app_context().push(); db.create_all(); print('Database initialized with Excel access control')"
+```
+
+### Add Excel Access Column (if migrating from older version)
+```cmd
+# If upgrading from version without Excel access
+python -c "
+from app import app, db; 
+app.app_context().push(); 
+db.engine.execute('ALTER TABLE user ADD COLUMN excel_access BOOLEAN DEFAULT FALSE NOT NULL'); 
+print('Excel access column added')
+"
 ```
 
 ## Step 11: Test Deployment
@@ -259,38 +270,73 @@ python -c "from app import app, db; app.app_context().push(); db.create_all(); p
 ### Test Local Access
 1. Open browser: `http://localhost/production-tracking`
 2. Login with: **Username:** `admin`, **Password:** `admin123`
+3. Navigate to User Management to configure Excel access permissions
+
+### Test Excel Access Control
+1. Login as admin
+2. Go to **Admin Dashboard** → **User Management**
+3. Create a new user and grant Excel access
+4. Login as the new user and verify Excel download buttons appear in Reports section
 
 ### Test from Network
 1. Open Windows Firewall
 2. Allow HTTP (port 80) traffic
 3. Test from another machine: `http://your-server-ip/production-tracking`
 
+## New Features in Version 2.0
+
+### Excel Access Management
+- **Granular Control**: Admin can grant/revoke Excel export access per user
+- **Visual Indicators**: Excel access status shown with badges in user management
+- **Department Filtering**: Non-admin users with Excel access see only their department's data
+
+### Enhanced User Interface
+- **Improved Forms**: Better field alignment and responsive layouts
+- **Conditional UI**: Excel download buttons appear only for authorized users
+- **Professional Styling**: Updated templates with consistent design
+
+### Security Enhancements
+- **Permission Layers**: Additional access control for sensitive data export
+- **Audit Trail**: User activity tracking includes Excel export attempts
+- **Department Isolation**: Users can only export data from their assigned department
+
 ## Troubleshooting
 
 ### Common Issues
 
-#### 1. Python Not Found
+#### 1. Excel Export Not Working
+**Error:** `Access denied. Excel export permission required.`
+**Solution:** 
+- Login as admin → User Management
+- Edit user and check "Excel Access" checkbox
+- Verify user has proper department assignment
+
+#### 2. Python Not Found
 **Error:** `The FastCGI process exited unexpectedly`
 **Solution:** 
 - Verify Python path in web.config
 - Check Python installation: `python --version`
 
-#### 2. Module Import Errors
+#### 3. Module Import Errors
 **Error:** `ModuleNotFoundError`
 **Solution:**
 ```cmd
-# Install missing modules
-pip install flask flask-sqlalchemy gunicorn psycopg2-binary
+# Install missing modules including new dependencies
+pip install flask flask-sqlalchemy gunicorn psycopg2-binary openpyxl
 ```
 
-#### 3. Database Connection Issues
-**Error:** `Connection refused` or `Authentication failed`
+#### 4. Database Migration Issues
+**Error:** `Column 'excel_access' does not exist`
 **Solution:**
-- Check DATABASE_URL environment variable
-- Verify PostgreSQL is running
-- Test connection: `psql -h localhost -U production_user -d production_order_tracking`
+```cmd
+# Add the new column to existing database
+python -c "
+from app import db; 
+db.engine.execute('ALTER TABLE user ADD COLUMN excel_access BOOLEAN DEFAULT FALSE NOT NULL')
+"
+```
 
-#### 4. Permission Denied
+#### 5. Permission Denied
 **Error:** `Access denied` or `500 Internal Server Error`
 **Solution:**
 ```cmd
@@ -299,7 +345,7 @@ icacls C:\inetpub\wwwroot\production-tracking /grant "IIS_IUSRS:(OI)(CI)F"
 icacls C:\Python313 /grant "IIS_IUSRS:(OI)(CI)F"
 ```
 
-#### 5. Application Pool Crashes
+#### 6. Application Pool Crashes
 **Solution:**
 1. Check **Event Viewer** → **Windows Logs** → **Application**
 2. Review IIS logs in `C:\inetpub\logs\LogFiles\W3SVC1\`
@@ -327,18 +373,25 @@ Add to web.config for debugging:
    admin_user.password_hash = generate_password_hash('NewSecurePassword123!')
    ```
 
-2. **Secure Database:**
+2. **Configure Excel Access:**
+   ```python
+   # Grant Excel access to specific users only
+   # Review permissions regularly
+   # Monitor Excel export activity
+   ```
+
+3. **Secure Database:**
    - Use strong passwords
    - Enable SSL/TLS for database connections
    - Restrict database access to application server only
 
-3. **IIS Security:**
+4. **IIS Security:**
    - Remove unused IIS features
    - Configure SSL certificates
    - Enable request filtering
    - Set up IP restrictions if needed
 
-4. **Environment Variables:**
+5. **Environment Variables:**
    - Never commit `.env` files to source control
    - Use strong SESSION_SECRET (32+ characters)
 
@@ -354,6 +407,11 @@ Add to web.config for debugging:
 - **Recycling Conditions:** Memory limit 500MB
 - **Idle Timeout:** 20 minutes
 
+### Excel Export Optimization
+- **File Size Management**: Monitor Excel file sizes
+- **Memory Usage**: Track memory during Excel generation
+- **Concurrent Exports**: Limit simultaneous Excel exports
+
 ## Backup and Maintenance
 
 ### Regular Backups
@@ -365,38 +423,68 @@ Add to web.config for debugging:
 2. **Application Backup:**
    - Copy entire application folder
    - Export IIS configuration
+   - Backup user permissions and Excel access settings
 
 ### Updates
 1. **Python Dependencies:**
    ```cmd
-   pip install --upgrade flask flask-sqlalchemy
+   pip install --upgrade flask flask-sqlalchemy openpyxl
    ```
 
 2. **Application Updates:**
    - Stop IIS Application Pool
    - Deploy new code
+   - Run database migrations if needed
    - Restart Application Pool
+
+### Database Maintenance
+1. **User Permissions Audit:**
+   ```sql
+   SELECT username, is_admin, excel_access, department FROM "user";
+   ```
+
+2. **Excel Export Activity:**
+   ```sql
+   -- Monitor Excel export usage
+   -- Check user activity logs
+   ```
 
 ## Support
 
 ### Default Login Credentials
 - **Username:** `admin`
 - **Password:** `admin123`
+- **Excel Access:** Enabled by default
 - **Change immediately after first login**
 
-### Application Features
-- User Management
-- Work Center Management  
-- Production Order Tracking (IN/OUT)
-- Balance Reports
-- Excel Export
-- Role-based Access Control
+### Application Features (Version 2.0)
+- **User Management with Excel Access Control**
+- **Work Center Management**  
+- **Production Order Tracking (IN/OUT)**
+- **Balance Reports with Export Control**
+- **Excel Export with Department Filtering**
+- **Enhanced Role-based Access Control**
 
 ### Technical Support
 - Check Event Viewer for system errors
 - Review IIS logs for request issues
 - Monitor application performance in Task Manager
+- Validate Excel access permissions for users
+
+### Excel Access Configuration
+1. **Admin Setup:**
+   - Login as admin
+   - Navigate to User Management
+   - Create/edit users and assign Excel access
+
+2. **User Experience:**
+   - Users with Excel access see download buttons in Reports
+   - Non-admin users see only their department's data
+   - Excel files include professional formatting
 
 ---
 
-**Note:** This guide assumes Windows Server environment. Adjust paths and permissions as needed for your specific setup.
+**Note:** This guide assumes Windows Server environment and includes the new Excel access control features introduced in Version 2.0. Adjust paths and permissions as needed for your specific setup.
+
+**Last Updated:** December 5, 2024  
+**Version:** 2.0 IIS Deployment Guide

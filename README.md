@@ -1,13 +1,13 @@
 # Production Order Tracking System
 
-Comprehensive Flask-based web application for tracking production orders in manufacturing environments, optimized for PostgreSQL with simplified two-tier role system and real-time order management across multiple work centers.
+Comprehensive Flask-based web application for tracking production orders in manufacturing environments, optimized for PostgreSQL with role-based access control and advanced Excel export capabilities.
 
 ## Overview
 
 The Production Order Tracking System uses a modern relational database architecture with **4 core tables** supporting user management, work center definitions, department organization, and comprehensive production order lifecycle tracking. Designed for PostgreSQL primary deployment with IST timezone display and optimized for Replit environment.
 
 **Database Tables:**
-1. **user** - User authentication and profile management with role-based access
+1. **user** - User authentication, profile management, and Excel access permissions
 2. **work_center** - Production facility definitions and work center management
 3. **department** - Organizational unit definitions and structure
 4. **production_order** - Core production order lifecycle with IN/OUT tracking and balance calculations
@@ -18,18 +18,25 @@ The Production Order Tracking System uses a modern relational database architect
 ### **Core Functionality**
 - **Production Order Management**: Record and track incoming (IN) and outgoing (OUT) production orders with balance calculations
 - **Work Center Integration**: Multi-work center support with department-based filtering and dedicated tracking per facility
-- **Role-Based Access Control**: Simplified two-tier system (Regular User and Administrator)
+- **Role-Based Access Control**: Three-tier system (Regular User, Excel Access User, and Administrator)
 - **Department-Based Access**: Users only see work centers assigned to their department, reducing interface complexity
 - **Balance Reporting**: Real-time balance calculations showing IN/OUT quantities and current balance per work center
 - **Real-time Reporting**: Generate comprehensive reports with filtering and export capabilities
-- **Excel Export**: Professional Excel export with formatting, balance data, and data visualization
+- **Excel Export with Permissions**: Professional Excel export with granular access control and department-based filtering
 - **Search and Filtering**: Advanced search capabilities across all production data
+
+### **Excel Access Management**
+- **Granular Permissions**: Admin can grant/revoke Excel export access per user
+- **Department Filtering**: Users with Excel access see only their department's data (unless admin)
+- **Professional Formatting**: Excel exports include headers, styling, and proper data formatting
+- **Multiple Worksheets**: Production Orders and Balance Report in separate sheets
+- **Access Indicators**: Visual badges showing Excel access status in user management
 
 ### **User Management**
 - **Authentication**: Secure session-based login with password hashing
-- **User Profiles**: Department assignment and role management
+- **User Profiles**: Department assignment, role management, and Excel access control
 - **Department-Based Access**: Users see only work centers assigned to their department
-- **Admin Functions**: User management, work center configuration, department assignment, and system administration
+- **Admin Functions**: User management, work center configuration, department assignment, Excel access control, and system administration
 - **Auto-provisioning**: Default admin user, work center, and department creation on first startup
 
 ### **Responsive Design**
@@ -37,6 +44,7 @@ The Production Order Tracking System uses a modern relational database architect
 - **Mobile Optimized**: Responsive design that works on all devices
 - **Font Awesome Icons**: Consistent iconography throughout the application
 - **Modern UI/UX**: Clean, intuitive interface designed for manufacturing environments
+- **Conditional UI**: Excel download buttons appear only for users with appropriate permissions
 
 ## Quick Start
 
@@ -47,6 +55,7 @@ The Production Order Tracking System uses a modern relational database architect
    - **Username**: admin
    - **Password**: admin123
 3. **Access Application**: Click the "Run" button and open the web preview
+4. **Excel Access**: Admin users automatically have Excel export access
 
 ### **Local Development**
 
@@ -92,7 +101,7 @@ The Production Order Tracking System uses a modern relational database architect
 #### **Users (`user`)**
 - User authentication and role management
 - Department assignment and profile information
-- Admin privileges and access control
+- Admin privileges and Excel export access control
 - Account status and creation tracking
 
 #### **Work Centers (`work_center`)**
@@ -119,6 +128,7 @@ For detailed database schema, see [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)
 - **Username**: admin
 - **Password**: admin123
 - **Role**: Administrator
+- **Excel Access**: Enabled by default
 - **Access**: Full system administration
 
 *⚠️ Important: Change default password after first login*
@@ -172,18 +182,31 @@ production_order.user_id = current_user.id
 # Timestamp automatically set to current time (displayed in IST)
 ```
 
+### **Excel Access Control**
+```python
+# Example: Checking Excel access
+current_user = User.query.get(session['user_id'])
+has_excel_access = current_user and (current_user.excel_access or current_user.is_admin)
+
+# Excel export with department filtering
+if not current_user.is_admin and user_department:
+    query = query.filter(User.department == user_department)
+```
+
 ### **Reporting and Analytics**
 - **Search Functionality**: Filter orders by production order number
 - **Balance Reporting**: Real-time IN/OUT balance calculations with user name, department, and IST timestamps
-- **Export Capabilities**: Professional Excel export with formatting
+- **Export Capabilities**: Professional Excel export with access control
 - **Date Range Filtering**: Filter orders by creation date (displayed in IST)
 - **Work Center Analysis**: View orders by specific work centers
-- **Simplified Admin Reports**: Streamlined interface focusing on production order search
+- **Department-Based Filtering**: Users see only relevant data based on their department
 
 ### **Excel Export Features**
+- **Access Control**: Only users with Excel permissions can download reports
 - **Professional Formatting**: Headers, colors, and alignment
+- **Multiple Worksheets**: Production Orders and Balance Reports
+- **Department Filtering**: Non-admin users see only their department's data
 - **Data Validation**: Comprehensive data integrity checks
-- **Multiple Formats**: Support for various Excel formats
 - **Automated Generation**: One-click export functionality
 
 ## Security Features
@@ -192,6 +215,7 @@ production_order.user_id = current_user.id
 - **Password Hashing**: Werkzeug-based secure password storage
 - **Session Management**: Secure session-based authentication
 - **Role Validation**: Route-level permission checking
+- **Excel Access Control**: Granular permissions for data export
 - **Auto-logout**: Session timeout and security measures
 
 ### **Data Security**
@@ -199,11 +223,28 @@ production_order.user_id = current_user.id
 - **Input Validation**: Comprehensive form validation
 - **SQL Injection Protection**: SQLAlchemy ORM protection
 - **XSS Prevention**: Template-based output escaping
+- **Department Isolation**: Users can only access their department's data
 
 ### **Access Control**
-- **Role-Based Permissions**: Admin vs. User access levels
+- **Role-Based Permissions**: Admin vs. User vs. Excel Access levels
 - **Route Protection**: Login required for all operational routes
 - **Session Validation**: Continuous session state checking
+- **Export Permissions**: Excel download access control
+
+## User Interface Enhancements
+
+### **Admin Interface**
+- **User Management**: Create, edit, and manage user accounts
+- **Excel Access Control**: Grant/revoke Excel export permissions per user
+- **Visual Indicators**: Excel access status shown with icons and badges
+- **Department Management**: Assign users to departments
+- **Work Center Configuration**: Set up and manage production facilities
+
+### **User Experience**
+- **Conditional Navigation**: UI elements appear based on user permissions
+- **Excel Download Buttons**: Visible only to users with appropriate access
+- **Professional Styling**: Consistent design with proper spacing and alignment
+- **Responsive Layout**: Optimized column layouts for form fields
 
 ## Development Guidelines
 
@@ -211,10 +252,10 @@ production_order.user_id = current_user.id
 ```
 ├── app.py              # Flask application setup and configuration
 ├── main.py             # Application entry point
-├── models.py           # Database models and relationships
-├── routes.py           # URL routing and request handling
+├── models.py           # Database models and relationships (with excel_access field)
+├── routes.py           # URL routing and request handling (with Excel access routes)
 ├── static/             # Static files (CSS, JS, images, favicon)
-├── templates/          # HTML templates with Jinja2
+├── templates/          # HTML templates with Jinja2 (updated with Excel access UI)
 ├── pyproject.toml      # Python dependencies and project config
 └── replit.md           # Project documentation and preferences
 ```
@@ -224,10 +265,11 @@ production_order.user_id = current_user.id
 - **Timestamp Tracking**: Creation timestamps on all entities
 - **Soft Deletes**: Active/inactive flags instead of hard deletes
 - **Audit Trails**: User attribution for all data modifications
+- **Permission Fields**: Boolean flags for feature access control
 
 ### **Performance Considerations**
 - **Connection Pooling**: Optimized database connection management
-- **Query Optimization**: Efficient joins and filtering
+- **Query Optimization**: Efficient joins and filtering with department-based access
 - **Lazy Loading**: Strategic relationship loading
 - **Index Usage**: Proper database indexing for performance
 
@@ -253,10 +295,11 @@ GUNICORN_TIMEOUT=30
 - [ ] Set up regular database backups
 - [ ] Configure firewall and network security
 - [ ] Enable application logging and monitoring
+- [ ] Review Excel access permissions for all users
 
 ### **Performance Optimization**
 - [ ] Configure database connection pooling
-- [ ] Set up database indexing
+- [ ] Set up database indexing (including excel_access field)
 - [ ] Enable query caching
 - [ ] Configure static file serving
 - [ ] Set up CDN for static assets
@@ -269,17 +312,18 @@ GUNICORN_TIMEOUT=30
 - Database connectivity testing
 - Application response time monitoring
 - User session validation
+- Excel export functionality testing
 - File system space monitoring
 
 ### **Backup Strategy**
-- Daily automated database backups
+- Daily automated database backups (including user permissions)
 - Configuration file backups
 - Static file preservation
 - Version control integration
 
 ### **Logging**
 - Application error logging
-- User activity tracking
+- User activity tracking (including Excel exports)
 - Database query monitoring
 - Performance metric collection
 
@@ -289,6 +333,7 @@ GUNICORN_TIMEOUT=30
 - **README.md**: This comprehensive overview
 - **DATABASE_SCHEMA.md**: Detailed database schema and setup
 - **DATABASE_POSTGRESQL_SETUP.md**: PostgreSQL configuration guide
+- **README_IIS_Deployment.md**: Windows IIS deployment instructions
 - **replit.md**: Project preferences and architecture notes
 
 ### **Getting Help**
@@ -296,17 +341,34 @@ GUNICORN_TIMEOUT=30
 - Verify database connection and configuration
 - Review environment variable settings
 - Validate user permissions and roles
+- Test Excel access permissions
 
 ### **Common Issues**
 - **Login Problems**: Check user credentials and database connectivity
 - **Data Not Saving**: Verify database permissions and constraints
 - **Performance Issues**: Check database connections and query performance
-- **Export Failures**: Validate data integrity and file permissions
+- **Export Failures**: Validate Excel access permissions and data integrity
+- **Permission Issues**: Verify user department assignments and Excel access flags
+
+## Recent Updates
+
+### **Version 2.0 Features**
+- **Excel Access Control**: Granular permissions for Excel export functionality
+- **Enhanced User Management**: Visual indicators for Excel access in admin interface
+- **Department-Based Filtering**: Excel exports respect user department restrictions
+- **UI Improvements**: Better field alignment and responsive layouts
+- **Security Enhancements**: Additional permission layers for data export
+
+### **Migration Notes**
+- Added `excel_access` boolean field to user table
+- Updated admin interface to manage Excel permissions
+- Enhanced templates with conditional Excel download buttons
+- Improved form layouts for better alignment
 
 ---
 
-**Last Updated**: September 3, 2025  
-**Version**: 1.2  
+**Last Updated**: December 5, 2024  
+**Version**: 2.0  
 **Environment**: Replit Optimized  
 **Database**: PostgreSQL Compatible  
-**Current Features**: Department-based work center filtering, balance calculations with IST timestamps, simplified admin interface
+**Current Features**: Excel access control, department-based filtering, enhanced user management, improved UI alignment
