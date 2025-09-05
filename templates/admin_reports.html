@@ -74,6 +74,7 @@
                                 <th>Work Center</th>
                                 <th>Quantity</th>
                                 <th>Type</th>
+                                <th>Remark</th>
                                 <th>Name</th>
                                 <th>Department</th>
                                 <th>Date & Time</th>
@@ -96,6 +97,7 @@
                                     </span>
                                     {% endif %}
                                 </td>
+                                <td>{{ order.remark or '-' }}</td>
                                 <td>{{ order.user.name or order.user.username }}</td>
                                 <td>{{ order.user.department or '-' }}</td>
                                 <td>{{ order.created_at_ist }} IST</td>

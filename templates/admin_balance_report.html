@@ -72,6 +72,7 @@
                             <tr>
                                 <th>Production Order</th>
                                 <th>Work Center</th>
+                                <th>Remarks</th>
                                 <th>Name</th>
                                 <th>Department</th>
                                 <th class="text-center">Balance</th>
@@ -85,6 +86,7 @@
                                     <strong>{{ item.workcenter_name }}</strong><br>
                                     <small class="text-muted">( In = {{ item.total_in }} - Out = {{ item.total_out }} )</small>
                                 </td>
+                                <td>{{ item.remarks_text }}</td>
                                 <td>{{ item.user_name }}</td>
                                 <td>{{ item.user_department }}</td>
                                 <td class="text-center">

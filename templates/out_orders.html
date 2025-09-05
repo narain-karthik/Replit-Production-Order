@@ -48,6 +48,11 @@
                         </div>
                         
                         <div class="col-md-3">
+                            <label for="remark" class="form-label">Remark</label>
+                            <input type="text" class="form-control" id="remark" placeholder="Optional remark">
+                        </div>
+                        
+                        <div class="col-md-2">
                             <label for="datetime" class="form-label">Date & Time</label>
                             <input type="text" class="form-control" id="datetime" readonly>
                         </div>
@@ -91,6 +96,7 @@ function saveOrder() {
     const workcenter = document.getElementById('workcenter');
     const productionOrder = document.getElementById('production_order');
     const quantity = document.getElementById('quantity');
+    const remark = document.getElementById('remark');
     
     // Validation
     if (!workcenter.value) {
@@ -111,8 +117,8 @@ function saveOrder() {
     form.method = 'POST';
     form.action = '{{ url_for("save_orders") }}';
     
-    // Add form data
-    const orderData = `${workcenter.value}|${productionOrder.value.trim()}|${quantity.value}`;
+    // Add form data (including remark)
+    const orderData = `${workcenter.value}|${productionOrder.value.trim()}|${quantity.value}|${remark.value.trim()}`;
     
     form.innerHTML = `
         <input type="hidden" name="order_type" value="OUT">

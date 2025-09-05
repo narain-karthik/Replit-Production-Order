@@ -57,6 +57,7 @@ class ProductionOrder(db.Model):
     workcenter_id = db.Column(db.Integer, db.ForeignKey('work_center.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     order_type = db.Column(db.String(10), nullable=False)  # 'IN' or 'OUT'
+    remark = db.Column(db.Text, nullable=True)  # New remark field
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
