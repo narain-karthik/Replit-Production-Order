@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/GTN Production Tracker.iml" filepath="$PROJECT_DIR$/.idea/GTN Production Tracker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/GTN-Production-Order-Tracker.iml" filepath="$PROJECT_DIR$/.idea/GTN-Production-Order-Tracker.iml" />
     </modules>
   </component>
 </project>

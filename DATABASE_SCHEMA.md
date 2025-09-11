@@ -70,6 +70,8 @@ CREATE TABLE "user" (
     is_active BOOLEAN DEFAULT TRUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE "user" ADD COLUMN excel_access BOOLEAN DEFAULT FALSE NOT NULL;
 ```
 
 **Field Specifications:**
@@ -216,6 +218,9 @@ CREATE TABLE production_order (
     user_id INTEGER REFERENCES "user"(id) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE production_order ADD COLUMN remark VARCHAR(500);
+
 ```
 
 **Field Specifications:**
