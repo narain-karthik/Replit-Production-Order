@@ -9,15 +9,15 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 logging.basicConfig(level=logging.DEBUG)
 
 def get_database_uri():
-    """Get database URI - PostgreSQL primary, with SQL Server and MySQL support"""
-
+    """Get database URI - PostgreSQL primary"""
+    
     # PostgreSQL (primary database)
     postgres_url = os.environ.get("DATABASE_URL")
     if postgres_url:
         return postgres_url
-
-    # Direct PostgreSQL configuration for local development
-    return "postgresql://production_user:production_password_2024@localhost:5432/production_order_tracking"
+    
+    # Fail fast if DATABASE_URL is not provided
+    raise ValueError("DATABASE_URL environment variable is required")
 
 class Base(DeclarativeBase):
     pass
@@ -26,7 +26,7 @@ db = SQLAlchemy(model_class=Base)
 
 # create the app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET" , "1010")
+app.secret_key = os.environ.get("SESSION_SECRET")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # configure the database
@@ -51,13 +51,17 @@ with app.app_context():
     from models import User, WorkCenter, Department
     from werkzeug.security import generate_password_hash
     
-    admin_user = User.query.filter_by(username='admin').first()
-    if not admin_user:
-        admin_user = User()
-        admin_user.username = 'admin'
-        admin_user.password_hash = generate_password_hash('admin123')
-        admin_user.is_admin = True
-        db.session.add(admin_user)
+    # Create default admin user only if explicitly enabled and password provided
+    if os.environ.get("BOOTSTRAP_ADMIN") == "true":
+        admin_password = os.environ.get("ADMIN_PASSWORD")
+        if admin_password:
+            admin_user = User.query.filter_by(username='admin').first()
+            if not admin_user:
+                admin_user = User()
+                admin_user.username = 'admin'
+                admin_user.password_hash = generate_password_hash(admin_password)
+                admin_user.is_admin = True
+                db.session.add(admin_user)
     
     # Create default workcenters if not exist
     if WorkCenter.query.count() == 0:
