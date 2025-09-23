@@ -16,8 +16,8 @@ def get_database_uri():
     if postgres_url:
         return postgres_url
 
-    # Direct PostgreSQL configuration for local development
-    return "postgresql://production_user:production_password_2024@localhost:5432/production_order_tracking"
+    # Fallback to SQLite for development if no DATABASE_URL is set
+    return "sqlite:///production_order_tracking.db"
 
 class Base(DeclarativeBase):
     pass
@@ -78,4 +78,4 @@ with app.app_context():
     db.session.commit()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=1010, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
