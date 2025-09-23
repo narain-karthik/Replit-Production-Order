@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Production Order Tracking System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-tachometer-alt text-primary me-3"></i>Admin Dashboard</h1>
+        <p class="lead text-muted">Welcome to the admin panel, {{ session.username }}!</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_users }}</h4>
+                        <p class="card-text">Active Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_in_orders }}</h4>
+                        <p class="card-text">IN Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-arrow-down fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_out_orders }}</h4>
+                        <p class="card-text">OUT Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-arrow-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_workcenters }}</h4>
+                        <p class="card-text">Work Centers</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-industry fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">User Management</h5>
+                <p class="card-text">Create, edit, and manage user accounts</p>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-primary">
+                    <i class="fas fa-cog me-2"></i>Manage Users
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Reports</h5>
+                <p class="card-text">View detailed production order reports</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_reports') }}" class="btn btn-info">
+                        <i class="fas fa-eye me-2"></i>All Reports
+                    </a>
+                    <a href="{{ url_for('admin_balance_report') }}" class="btn btn-outline-info">
+                        <i class="fas fa-balance-scale me-2"></i>Balance Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-database fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Master Data</h5>
+                <p class="card-text">Manage work centers and system data</p>
+                <a href="{{ url_for('master_data') }}" class="btn btn-success">
+                    <i class="fas fa-edit me-2"></i>Manage Data
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-download fa-3x text-secondary mb-3"></i>
+                <h5 class="card-title">Export Data</h5>
+                <p class="card-text">Download production order reports as Excel</p>
+                <a href="{{ url_for('export_excel') }}" class="btn btn-secondary">
+                    <i class="fas fa-file-excel me-2"></i>Export Excel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

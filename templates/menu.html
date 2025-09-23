@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Menu - Production Order Tracking System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="text-center mb-5">
+            <h1><i class="fas fa-clipboard-list me-3"></i>Production Order Menu</h1>
+            <p class="lead text-muted">Welcome, {{ session.username }}! Select an option below to continue.</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 menu-card">
+                    <div class="card-body text-center">
+                        <div class="menu-icon mb-3">
+                            <i class="fas fa-arrow-down fa-3x text-success"></i>
+                        </div>
+                        <h4 class="card-title">IN Orders</h4>
+                        <p class="card-text">Record incoming production orders</p>
+                        <a href="{{ url_for('in_orders') }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Add IN Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 menu-card">
+                    <div class="card-body text-center">
+                        <div class="menu-icon mb-3">
+                            <i class="fas fa-arrow-up fa-3x text-warning"></i>
+                        </div>
+                        <h4 class="card-title">OUT Orders</h4>
+                        <p class="card-text">Record outgoing production orders</p>
+                        <a href="{{ url_for('out_orders') }}" class="btn btn-warning">
+                            <i class="fas fa-minus me-2"></i>Add OUT Orders
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 menu-card">
+                    <div class="card-body text-center">
+                        <div class="menu-icon mb-3">
+                            <i class="fas fa-chart-line fa-3x text-info"></i>
+                        </div>
+                        <h4 class="card-title">Reports</h4>
+                        <p class="card-text">View production order reports and status</p>
+                        <a href="{{ url_for('reports') }}" class="btn btn-info">
+                            <i class="fas fa-eye me-2"></i>View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

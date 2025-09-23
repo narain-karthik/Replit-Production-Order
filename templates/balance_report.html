@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Balance Report - Production Order Tracking System{% endblock %}
+
+{% block content %}
+<style>
+    /* Make the page full width */
+.container-fluid {
+    max-width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+.container {
+    max-width: 95% !important;
+    width: 95% !important;
+}
+
+/* Make the main content area wider */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Make the card take full width */
+.card {
+    width: 100% !important;
+}
+
+/* Ensure all columns use full available width */
+.col-12 {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+</style>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-balance-scale text-primary me-3"></i>Production Order Balance Report</h1>
+            <div>
+                {% if has_excel_access %}
+                <a href="{{ url_for('user_export_excel') }}" class="btn btn-success me-2">
+                    <i class="fas fa-file-excel me-2"></i>Download Excel
+                </a>
+                {% endif %}
+                <a href="{{ url_for('reports') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                </a>
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('balance_report') }}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Search Production Order</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search }}" placeholder="Enter production order number">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="workcenter" class="form-label">Work Center</label>
+                            <select class="form-select" id="workcenter" name="workcenter">
+                                <option value="">All Work Centers</option>
+                                {% for wc in workcenters %}
+                                <option value="{{ wc.id }}" {{ 'selected' if workcenter_filter == wc.id|string else '' }}>{{ wc.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_from" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_to" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                            <a href="{{ url_for('balance_report') }}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>Clear Filters
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Balance Report Results -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-table me-2"></i>Production Order Balance by Work Center ({{ balance_data|length }} entries)</h5>
+                {% if session.role == 'admin' %}
+                <div id="bulk-actions-balance" style="display: none;">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedBalance()">
+                        <i class="fas fa-trash me-2"></i>Delete Selected Orders
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if balance_data %}
+                {% if session.role == 'admin' %}
+                <form id="bulk-delete-balance-form" method="POST" action="{{ url_for('bulk_delete_by_production_order') }}">
+                {% endif %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    {% if session.role == 'admin' %}
+                                    <th>
+                                        <input type="checkbox" id="select-all-balance" class="form-check-input">
+                                    </th>
+                                    {% endif %}
+                                    <th>Production Order</th>
+                                    <th>Work Center</th>
+                                    <th>Remarks</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th class="text-center">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in balance_data %}
+                                <tr>
+                                    {% if session.role == 'admin' %}
+                                    <td>
+                                        <input type="checkbox" name="production_orders" value="{{ item.production_order }}-{{ item.workcenter_id }}" class="form-check-input balance-checkbox">
+                                    </td>
+                                    {% endif %}
+                                    <td><strong>{{ item.production_order }}</strong></td>
+                                    <td>
+                                        <strong>{{ item.workcenter_name }}</strong><br>
+                                        <small class="text-muted">( In = {{ item.total_in }} - Out = {{ item.total_out }} )</small>
+                                    </td>
+                                    <td>{{ item.remarks_text }}</td>
+                                    <td>{{ item.user_name }}</td>
+                                    <td>{{ item.user_department }}</td>
+                                    <td class="text-center">
+                                        {% if item.balance > 0 %}
+                                        <span class="badge bg-success fs-6">{{ item.balance }}</span>
+                                        {% elif item.balance == 0 %}
+                                        <span class="badge bg-secondary fs-6">{{ item.balance }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger fs-6">{{ item.balance }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% if session.role == 'admin' %}
+                </form>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-balance-scale fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No balance data found</h4>
+                    <p class="text-muted">Try adjusting your search criteria or add some production orders first.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if session.role == 'admin' %}
+<script>
+// Multi-selection functionality for balance report
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all-balance');
+    const balanceCheckboxes = document.querySelectorAll('.balance-checkbox');
+    const bulkActions = document.getElementById('bulk-actions-balance');
+    
+    // Select/deselect all functionality
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            balanceCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            toggleBulkActionsBalance();
+        });
+    }
+    
+    // Individual checkbox change
+    balanceCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Update select all checkbox state
+            const checkedCount = document.querySelectorAll('.balance-checkbox:checked').length;
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = checkedCount === balanceCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < balanceCheckboxes.length;
+            }
+            toggleBulkActionsBalance();
+        });
+    });
+    
+    function toggleBulkActionsBalance() {
+        const checkedCount = document.querySelectorAll('.balance-checkbox:checked').length;
+        if (bulkActions) {
+            bulkActions.style.display = checkedCount > 0 ? 'block' : 'none';
+        }
+    }
+});
+
+function deleteSelectedBalance() {
+    const checkedBoxes = document.querySelectorAll('.balance-checkbox:checked');
+    
+    if (checkedBoxes.length === 0) {
+        alert('Please select at least one production order to delete.');
+        return;
+    }
+    
+    const confirmed = confirm(`Are you sure you want to delete all orders for ${checkedBoxes.length} selected production order(s)? This will delete ALL IN and OUT orders for these production orders. This action cannot be undone.`);
+    
+    if (confirmed) {
+        document.getElementById('bulk-delete-balance-form').submit();
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

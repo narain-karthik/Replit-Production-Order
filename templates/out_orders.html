@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}OUT Orders - Production Order Tracking System{% endblock %}
+
+{% block content %}
+<style>
+    /* Make the page full width */
+.container-fluid {
+    max-width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+}
+
+.container {
+    max-width: 95% !important;
+    width: 95% !important;
+}
+
+/* Make the main content area wider */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Make the card take full width */
+.card {
+    width: 100% !important;
+}
+
+/* Ensure all columns use full available width */
+.col-12 {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+</style>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-arrow-up text-warning me-3"></i>OUT Orders</h1>
+            <a href="{{ url_for('menu') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Menu
+            </a>
+        </div>
+        
+        <form id="ordersForm" method="POST" action="{{ url_for('save_orders') }}">
+            <input type="hidden" name="order_type" value="OUT">
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="order_page" id="out_radio" checked disabled>
+                        <label class="form-check-label" for="out_radio">
+                            <strong>OUT Orders Page</strong>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Multiple Entry Mode</h5>
+                        <button type="button" class="btn btn-primary" onclick="addNewRow()">
+                            <i class="fas fa-plus me-2"></i>Add New Entry
+                        </button>
+                    </div>
+                    
+                    <!-- Headers -->
+                    <div class="row fw-bold text-center mb-2 border-bottom pb-2">
+                        <div class="col-md-3">Work Center</div>
+                        <div class="col-md-2">Production Order</div>
+                        <div class="col-md-1">Quantity</div>
+                        <div class="col-md-2">Remark</div>
+                        <div class="col-md-3">Date & Time</div>
+                        <div class="col-md-1">Action</div>
+                    </div>
+                    
+                    <!-- Dynamic Rows Container -->
+                    <div id="ordersContainer">
+                        <!-- Initial row will be added by JavaScript -->
+                    </div>
+                    
+                    <!-- Save All Button -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-success btn-lg me-3" onclick="saveAllOrders()">
+                                <i class="fas fa-save me-2"></i>Save All Orders
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="clearAllEntries()">
+                                <i class="fas fa-trash-alt me-2"></i>Clear All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let rowCounter = 0;
+
+// Update all datetime fields every second
+function updateAllDateTimes() {
+    const now = new Date();
+    const formatted = now.toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    // Update all datetime fields
+    const datetimeFields = document.querySelectorAll('[id^="datetime_"]');
+    datetimeFields.forEach(field => {
+        field.value = formatted;
+    });
+}
+
+// Add new row
+function addNewRow() {
+    rowCounter++;
+    const container = document.getElementById('ordersContainer');
+    
+    const rowHtml = `
+        <div class="row mb-3 border-bottom pb-3" id="row_${rowCounter}">
+            <div class="col-md-3">
+                <select class="form-select" id="workcenter_${rowCounter}">
+
+                    {% for wc in workcenters %}
+                    <option value="{{ wc.id }}">{{ wc.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <input type="text" class="form-control" id="production_order_${rowCounter}" placeholder="Enter order number">
+            </div>
+            
+            <div class="col-md-1">
+                <input type="number" class="form-control" id="quantity_${rowCounter}" min="1" placeholder="Qty">
+            </div>
+            
+            <div class="col-md-2">
+                <input type="text" class="form-control" id="remark_${rowCounter}" placeholder="Optional remark">
+            </div>
+            
+            <div class="col-md-3">
+                <input type="text" class="form-control" id="datetime_${rowCounter}" readonly>
+            </div>
+            
+            <div class="col-md-1">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${rowCounter})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', rowHtml);
+    updateAllDateTimes();
+}
+
+// Remove row
+function removeRow(rowId) {
+    const row = document.getElementById(`row_${rowId}`);
+    if (row) {
+        row.remove();
+    }
+    
+    // If no rows left, add one
+    const container = document.getElementById('ordersContainer');
+    if (container.children.length === 0) {
+        addNewRow();
+    }
+}
+
+// Clear all entries
+function clearAllEntries() {
+    if (confirm('Are you sure you want to clear all entries?')) {
+        document.getElementById('ordersContainer').innerHTML = '';
+        addNewRow();
+    }
+}
+
+// Validate single row
+function validateRow(rowId) {
+    const workcenter = document.getElementById(`workcenter_${rowId}`);
+    const productionOrder = document.getElementById(`production_order_${rowId}`);
+    const quantity = document.getElementById(`quantity_${rowId}`);
+    
+    if (!workcenter.value) {
+        alert(`Row ${rowId}: Please select a work center`);
+        return false;
+    }
+    if (!productionOrder.value.trim()) {
+        alert(`Row ${rowId}: Please enter a production order`);
+        return false;
+    }
+    if (!quantity.value || quantity.value <= 0) {
+        alert(`Row ${rowId}: Please enter a valid quantity`);
+        return false;
+    }
+    
+    return true;
+}
+
+// Save all orders
+function saveAllOrders() {
+    const container = document.getElementById('ordersContainer');
+    const rows = container.querySelectorAll('[id^="row_"]');
+    
+    if (rows.length === 0) {
+        alert('Please add at least one entry');
+        return;
+    }
+    
+    const ordersList = [];
+    let hasValidEntry = false;
+    
+    // Collect all valid entries
+    rows.forEach(row => {
+        const rowId = row.id.replace('row_', '');
+        const workcenter = document.getElementById(`workcenter_${rowId}`);
+        const productionOrder = document.getElementById(`production_order_${rowId}`);
+        const quantity = document.getElementById(`quantity_${rowId}`);
+        const remark = document.getElementById(`remark_${rowId}`);
+        
+        // Skip empty rows
+        if (!workcenter.value && !productionOrder.value.trim() && !quantity.value) {
+            return;
+        }
+        
+        // Validate filled rows
+        if (validateRow(rowId)) {
+            const orderData = `${workcenter.value}|${productionOrder.value.trim()}|${quantity.value}|${remark.value.trim()}`;
+            ordersList.push(orderData);
+            hasValidEntry = true;
+        }
+    });
+    
+    if (!hasValidEntry) {
+        alert('Please fill in at least one complete entry');
+        return;
+    }
+    
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("save_orders") }}';
+    
+    let formHtml = '<input type="hidden" name="order_type" value="OUT">';
+    
+    ordersList.forEach(orderData => {
+        formHtml += `<input type="hidden" name="orders" value="${orderData}">`;
+    });
+    
+    form.innerHTML = formHtml;
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    addNewRow(); // Add initial row
+    updateAllDateTimes();
+    setInterval(updateAllDateTimes, 1000); // Update every second
+});
+</script>
+{% endblock %}
