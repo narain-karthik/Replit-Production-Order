@@ -160,7 +160,7 @@ System{% endblock %} {% block content %}
             </div>
             
             <div class="col-md-2">
-                <input type="text" class="form-control" id="production_order_${rowCounter}" placeholder="Enter order number">
+                <input type="text" class="form-control" id="production_order_${rowCounter}" placeholder="Enter order number" onblur="moveToNextField(${rowCounter})" onkeydown="handleEnterKey(event, ${rowCounter})">
             </div>
             
             <div class="col-md-1">
@@ -185,6 +185,26 @@ System{% endblock %} {% block content %}
 
         container.insertAdjacentHTML("beforeend", rowHtml);
         updateAllDateTimes();
+    }
+
+    // Move cursor to next field automatically
+    function moveToNextField(rowId) {
+        const currentField = document.getElementById(`production_order_${rowId}`);
+        const nextField = document.getElementById(`quantity_${rowId}`);
+        
+        // Only move if current field has value and next field exists
+        if (currentField && currentField.value.trim() !== "" && nextField) {
+            nextField.focus();
+            nextField.select(); // Select the content for easy overwriting
+        }
+    }
+
+    // Handle Enter key press to move to next field
+    function handleEnterKey(event, rowId) {
+        if (event.key === "Enter") {
+            event.preventDefault(); // Prevent form submission
+            moveToNextField(rowId);
+        }
     }
 
     // Remove row
