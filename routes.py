@@ -102,6 +102,54 @@ def save_orders():
     order_type = request.form['order_type']
     orders_data = request.form.getlist('orders')
     
+    # Check for missing IN orders if this is an OUT order submission
+    if order_type == 'OUT':
+        warnings = []
+        production_orders_to_save = []
+        
+        # Collect all production order numbers being saved
+        for order_data in orders_data:
+            if order_data:  # Skip empty entries
+                parts = order_data.split('|')
+                if len(parts) == 4:
+                    workcenter_id, production_order, quantity, remark = parts
+                    
+                    # Skip if workcenter_id is empty or invalid
+                    if not workcenter_id or workcenter_id == "":
+                        continue
+                    
+                    if production_order and production_order.strip():
+                        production_orders_to_save.append(production_order.strip())
+        
+        # Check for missing IN orders for each production order
+        for prod_order in production_orders_to_save:
+            if prod_order:
+                # Check if there are any IN orders for this production order in the last 30 days
+                thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+                
+                existing_in_orders = ProductionOrder.query.filter(
+                    ProductionOrder.production_order == prod_order,
+                    ProductionOrder.order_type == 'IN',
+                    ProductionOrder.created_at >= thirty_days_ago
+                ).count()
+                
+                existing_out_orders = ProductionOrder.query.filter(
+                    ProductionOrder.production_order == prod_order,
+                    ProductionOrder.order_type == 'OUT',
+                    ProductionOrder.created_at >= thirty_days_ago
+                ).count()
+                
+                # If no IN orders exist, or OUT orders greatly exceed IN orders, show warning
+                if existing_in_orders == 0:
+                    warnings.append(f"Production Order '{prod_order}': No IN entries found in the last 30 days!")
+                elif existing_out_orders > 0 and (existing_out_orders >= existing_in_orders * 2):
+                    warnings.append(f"Production Order '{prod_order}': Only {existing_in_orders} IN entries vs {existing_out_orders} OUT entries. Balance may be incorrect!")
+        
+        # Show warnings if any found
+        if warnings:
+            warning_msg = "⚠️ BALANCE WARNING - Please check if you need to enter IN orders:\n" + "\n".join(warnings)
+            flash(warning_msg, 'warning')
+    
     try:
         for order_data in orders_data:
             if order_data:  # Skip empty entries
