@@ -145,11 +145,19 @@ def save_orders():
                 elif existing_out_orders > 0 and (existing_out_orders >= existing_in_orders * 2):
                     warnings.append(f"Production Order '{prod_order}': Only {existing_in_orders} IN entries vs {existing_out_orders} OUT entries. Balance may be incorrect!")
         
-        # Show warnings if any found
+        # Show warnings if any found and PREVENT SAVING
         if warnings:
-            warning_msg = "⚠️ BALANCE WARNING - Please check if you need to enter IN orders:\n" + "\n".join(warnings)
-            flash(warning_msg, 'warning')
+            warning_msg = "🚨 CANNOT SAVE - MISSING IN ORDERS DETECTED!"
+            for warning in warnings:
+                flash(warning, 'error')
+            
+            flash("❌ Orders NOT SAVED! Please enter the missing IN orders first, then try saving OUT orders again.", 'error')
+            flash("💡 Go to IN Orders page → Enter the missing production orders → Then come back to save OUT orders", 'info')
+            
+            # Redirect back to OUT orders page so user can see their entries and fix the issue
+            return redirect(url_for('out_orders'))
     
+    # Only save if no warnings
     try:
         for order_data in orders_data:
             if order_data:  # Skip empty entries
